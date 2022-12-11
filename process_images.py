@@ -15,11 +15,9 @@ from skimage.measure import label, regionprops
 from skimage import morphology, img_as_ubyte
 from configparser import ConfigParser
 import feret
-
 from datetime import datetime
-
-import time
-import pathlib
+#import time
+#import pathlib
 
 
 
@@ -31,7 +29,8 @@ config_object.read("config.ini")
 def make_directories():
     # ----------- Make results directory ---------
     current_time = datetime.now() # datetime object containing current date and time
-    date_and_time_string = current_time.strftime("Results %d-%m-%Y %H%M%S")
+    #date_and_time_string = current_time.strftime("Results %d-%m-%y %H-%M-%S")
+    date_and_time_string = current_time.strftime("Results %X %H-%M-%S")
     global results_directory_name
     results_directory_name = date_and_time_string
     # check if results_directory_name  exists. if not, continue. else, add a rando letter?
@@ -67,7 +66,6 @@ def write_image(original_filename, string_label, image):
     :param image: the wanted image based on the arguments
     :return: the images at the argument checkpoints
     """
-
     original_path = Path(original_filename) # original_filename is the name of the original picture like 522_1_1.tif
     new_stem = original_path.stem + string_label # take off '.tif' from '522_1_1.tif'
     new_filename = original_path.with_stem(new_stem) # print(new_filename)   output: 522_1_1-nn_mask.tif
@@ -159,10 +157,10 @@ def threshold(nn_mask):
     :param nn_mask: the NN image
     :return: the threshold mask of the NN image
     """
-    # Retrieve the 'THRESHOLD' section of the config_object from config.py/config.ini files. This object is now called threshold1.
-    thresholdSectionForConfiguration = config_object['THRESHOLD']
-    #convert the pixel color value to an integer
-    threshold = int(thresholdSectionForConfiguration['threshold'])
+
+    thresholdSectionForConfiguration = config_object['THRESHOLD'] # Retrieve the 'THRESHOLD' section of the config_object from config.py/config.ini files. This object is now called threshold1.
+    threshold = int(thresholdSectionForConfiguration['threshold']) #convert the pixel color value to an integer
+
     # turns colorToTurnToWhiteAsAnInteger into white
     th, threshold_mask = cv2.threshold(nn_mask, threshold, 255, cv2.THRESH_BINARY)
     return threshold_mask
@@ -204,7 +202,7 @@ def area_filter(threshold_mask):
     """
     image = threshold_mask.copy()
     arr = image > 0
-    area_filtered = morphology.remove_small_objects(arr, min_size=700) # configure this!!
+    area_filtered = morphology.remove_small_objects(arr, min_size=700) # configure this!! *************************
 
     area_filtered = img_as_ubyte(area_filtered)
 
