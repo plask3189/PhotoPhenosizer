@@ -16,24 +16,20 @@ from skimage import morphology, img_as_ubyte
 from configparser import ConfigParser
 import feret
 from datetime import datetime
-#import time
-#import pathlib
 
 
 
-#colorToTurnToWhite = input('Enter the pixel color to turn to white. Example: 200  :')
-#Read config.ini file
 config_object = ConfigParser()
-config_object.read("config.ini")
+config_object.read("config.ini") # Read the config.ini file that is generated from config.py
+
 
 def make_directories():
     # ----------- Make results directory ---------
     current_time = datetime.now() # datetime object containing current date and time
     #date_and_time_string = current_time.strftime("Results %d-%m-%y %H-%M-%S")
-    date_and_time_string = current_time.strftime("Results %X %H-%M-%S")
+    date_and_time_string = current_time.strftime("Results %m-%d-%y %H-%M-%S")
     global results_directory_name
     results_directory_name = date_and_time_string
-    # check if results_directory_name  exists. if not, continue. else, add a rando letter?
     os.makedirs(results_directory_name, exist_ok=True) # Make the directory called results_directory_name so that we can add the csv files to this directory
 
     # ----------- Make area_filtered_masks directory ---------
@@ -158,8 +154,11 @@ def threshold(nn_mask):
     :return: the threshold mask of the NN image
     """
 
-    thresholdSectionForConfiguration = config_object['THRESHOLD'] # Retrieve the 'THRESHOLD' section of the config_object from config.py/config.ini files. This object is now called threshold1.
-    threshold = int(thresholdSectionForConfiguration['threshold']) #convert the pixel color value to an integer
+    #thresholdSectionForConfiguration = config_object['THRESHOLD'] # Retrieve the 'THRESHOLD' section of the config_object from config.py/config.ini files. This object is now called threshold1.
+    #threshold = int(thresholdSectionForConfiguration['threshold']) #convert the pixel color value to an integer
+
+    image_processing_section_name = config_object["IMAGEPROCESSING"] # Retrieve the "IMAGEPROCESSING" section from config.ini
+    threshold = int(image_processing_section_name['threshold']) #convert the pixel color value to an integer
 
     # turns colorToTurnToWhiteAsAnInteger into white
     th, threshold_mask = cv2.threshold(nn_mask, threshold, 255, cv2.THRESH_BINARY)
