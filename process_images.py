@@ -16,12 +16,13 @@ from skimage import morphology, img_as_ubyte
 from configparser import ConfigParser
 import feret
 from datetime import datetime
+from pp_config import PPConfig
 #import ppGUI
 
 
 
 config_object = ConfigParser()
-config_object.read("config.ini") # Read the config.ini file that is generated from config.py
+config_object.read("config.ini") # Read the config.ini file that is generated from pp_config.py
 
 
 def make_directories():
@@ -161,7 +162,7 @@ def threshold(nn_mask):
     image_processing_section_name = config_object["IMAGEPROCESSING"] # Retrieve the "IMAGEPROCESSING" section from config.ini
     threshold = int(image_processing_section_name['threshold']) #convert the pixel color value to an integer
 
-    # turns colorToTurnToWhiteAsAnInteger into white
+    # turns threshold into white (255)
     th, threshold_mask = cv2.threshold(nn_mask, threshold, 255, cv2.THRESH_BINARY)
     return threshold_mask
 

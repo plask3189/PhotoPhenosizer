@@ -3,7 +3,8 @@ import os
 
 
 class PPConfig:
-    def __init__(self, project_directory):
+
+    def __init__(self, project_directory): # parameter is project_directory
         self.filename = os.path.join(project_directory, 'config.ini')
         self.config_parser = ConfigParser()
 
@@ -30,7 +31,7 @@ class PPConfig:
                     self.weights_file = self.config_parser['NN']['weights_file']
         else:
             self.write_config()
-
+    
     def write_config(self):
         self.config_parser['IMAGEPROCESSING'] = {
             'threshold': self.threshold,
