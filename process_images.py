@@ -16,6 +16,7 @@ from skimage import morphology, img_as_ubyte
 from configparser import ConfigParser
 import feret
 from datetime import datetime
+#import ppGUI
 
 
 
@@ -26,7 +27,6 @@ config_object.read("config.ini") # Read the config.ini file that is generated fr
 def make_directories():
     # ----------- Make results directory ---------
     current_time = datetime.now() # datetime object containing current date and time
-    #date_and_time_string = current_time.strftime("Results %d-%m-%y %H-%M-%S")
     date_and_time_string = current_time.strftime("Results %m-%d-%y %H-%M-%S")
     global results_directory_name
     results_directory_name = date_and_time_string
@@ -96,6 +96,7 @@ def process_image(image_filename, args):
     :param args: any arguments that was passed from the user
     to the terminal
     """
+
     input_img = Image.open(image_filename).convert("RGB")
     nn_mask = nn_predict(input_img, args.weights_file)
     threshold_mask = threshold(nn_mask)
@@ -242,7 +243,6 @@ def main():
     the terminal
     """
     parser = ArgumentParser()
-
     parser.add_argument('--write_nn_mask', action='store_true',
                         help='Write the mask images produced by the neural '
                              'network')
@@ -254,21 +254,25 @@ def main():
                         help='Specify the path to the weights file')
     parser.add_argument('image_files', nargs='+')
     args = parser.parse_args()
-
-
     args.write_nn_mask = '--write_nn_mask'
-
     args.write_threshold_mask = '--write_threshold_mask'
-
     args.write_area_filtered = '--write_area_filtered'
 
-    make_directories()
+    make_directories() # in the Results folder, make the three configuration folders
+
     if args.weights_file is None:
         args.weights_file = 'weights.pt'
+
+
+    #os.chdir(ppGUI.folderSelected())
+    #cwd = os.getcwd()
+
+    #cwd = os.getcwd()
+    #print(cwd)
     for filename in args.image_files: # for each .tif file
         process_image(filename, args)
 
-
+    #os.chdir('../')
 
 
 
