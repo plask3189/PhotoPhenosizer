@@ -4,18 +4,17 @@ import os
 
 class PPConfig:
 
-    def __init__(self, project_directory): # parameter is project_directory
-        self.filename = os.path.join(project_directory, 'config.ini')
+    def __init__(self, project_directory): # parameter is project_directory to be able to get process_images.py and load configs
+        # ------------------ instance variables -----------------
+        self.filename = os.path.join(project_directory, 'config.ini') # create a config.ini file in the project directory.
         self.config_parser = ConfigParser()
-
         self.threshold = 200
         self.kernel_size = 3
         self.min_size = 700
         self.weights_file = os.path.join(project_directory, 'weights.pt')
 
-        if os.path.isfile(self.filename):
+        if os.path.isfile(self.filename): # if there is already a 'config.ini' file
             self.config_parser.read(self.filename)
-
             sections = self.config_parser.sections()
 
             if 'IMAGEPROCESSING' in sections:
@@ -29,9 +28,9 @@ class PPConfig:
             if 'NN' in sections:
                 if 'weights_file' in self.config_parser['NN']:
                     self.weights_file = self.config_parser['NN']['weights_file']
-        else:
+        else: # if there is not already a config.ini file, make one.
             self.write_config()
-    
+
     def write_config(self):
         self.config_parser['IMAGEPROCESSING'] = {
             'threshold': self.threshold,

@@ -17,7 +17,7 @@ from configparser import ConfigParser
 import feret
 from datetime import datetime
 from pp_config import PPConfig
-#import ppGUI
+
 
 
 
@@ -25,10 +25,12 @@ config_object = ConfigParser()
 config_object.read("config.ini") # Read the config.ini file that is generated from pp_config.py
 
 
+
 def make_directories():
+
     # ----------- Make results directory ---------
     current_time = datetime.now() # datetime object containing current date and time
-    date_and_time_string = current_time.strftime("Results %m-%d-%y %H-%M-%S")
+    date_and_time_string = current_time.strftime("Results %Y-%m-%d %H-%M-%S")
     global results_directory_name
     results_directory_name = date_and_time_string
     os.makedirs(results_directory_name, exist_ok=True) # Make the directory called results_directory_name so that we can add the csv files to this directory
@@ -71,9 +73,11 @@ def write_image(original_filename, string_label, image):
     os.chdir(results_directory_name) # The current working directory is the project directory, so we need to change it to the results directory which is where the images and other subdirectories will be placed.
 
     if string_label == '-nn_mask': # Check if the image created ends with 'nn-mask'
-        os.chdir('nn_masks') # Change the working directory to 'nn_masks'
-        cv2.imwrite(str(new_filename), image) # saves the image to the filepath called new_filename to the current working directory
-        os.chdir('../') # move back up to the parent directory (aka the results directory)
+        #os.chdir('nn_masks') # Change the working directory to 'nn_masks'
+        new_path = os.path.join(results_directory_name, 'nn_masks', str(new_filename))
+        cv2.imwrite(new_path, image) # saves the image to the filepath called new_filename to the current working directory
+
+        #os.chdir('../') # move back up to the parent directory (aka the results directory)
 
     if string_label == '-area_filtered': # Check if the image created ends with '-area_filtered'
         os.chdir('area_filtered_masks') # Change the working directory to 'area_filtered_masks'
@@ -95,22 +99,24 @@ def process_image(image_filename, args):
 
     :param image_filename: the name of the image
     :param args: any arguments that was passed from the user
-    to the terminal
+    to the terminal.
+
+     args is a dictionary with
     """
 
     input_img = Image.open(image_filename).convert("RGB")
-    nn_mask = nn_predict(input_img, args.weights_file)
-    threshold_mask = threshold(nn_mask)
-    threshold_mask = erod_dilate(threshold_mask)
-    area_filtered = area_filter(threshold_mask)
+    nn_mask = nn_predict(input_img, args['weights_file'])
+    threshold_mask = threshold(nn_mask, args["config"].threshold)
+    threshold_mask = erod_dilate(threshold_mask, args["config"].kernel_size)
+    area_filtered = area_filter(threshold_mask, args["config"].min_size)
     # Comment iou function out if no need for it
     # calculate_iou(label_img_area)
     write_dimensions(area_filtered, image_filename)
-    if args.write_nn_mask:
+    if args['write_nn_mask']:
         write_image(image_filename, '-nn_mask', nn_mask)
-    if args.write_threshold_mask:
+    if args["write_threshold_mask"]:
         write_image(image_filename, '-threshold', threshold_mask)
-    if args.write_area_filtered:
+    if args["write_area_filtered"]:
         write_image(image_filename, '-area_filtered', area_filtered)
 
 
@@ -148,7 +154,7 @@ def nn_predict(input_img, weights_filename):
     return out
 
 
-def threshold(nn_mask):
+def threshold(nn_mask, theshold_value):
     """
     Thresholds the NN image
 
@@ -156,17 +162,11 @@ def threshold(nn_mask):
     :return: the threshold mask of the NN image
     """
 
-    #thresholdSectionForConfiguration = config_object['THRESHOLD'] # Retrieve the 'THRESHOLD' section of the config_object from config.py/config.ini files. This object is now called threshold1.
-    #threshold = int(thresholdSectionForConfiguration['threshold']) #convert the pixel color value to an integer
-
-    image_processing_section_name = config_object["IMAGEPROCESSING"] # Retrieve the "IMAGEPROCESSING" section from config.ini
-    threshold = int(image_processing_section_name['threshold']) #convert the pixel color value to an integer
-
     # turns threshold into white (255)
-    th, threshold_mask = cv2.threshold(nn_mask, threshold, 255, cv2.THRESH_BINARY)
+    th, threshold_mask = cv2.threshold(nn_mask, threshold_value, 255, cv2.THRESH_BINARY)
     return threshold_mask
 
-def erod_dilate(threshold_mask):
+def erod_dilate(threshold_mask, kernel_size):
     """
     Applies closing, erosion, and dilation morphological changes to the threshold image
     to close any holes, remove noise, and separate groups of cells.
@@ -175,26 +175,26 @@ def erod_dilate(threshold_mask):
     :return: another threshold mask that have the new morphological changes
     """
     # closing
-    kernel = np.ones((3, 3), np.uint8) # kernel size is the number of pixels around the pixel being examined
+    kernel = np.ones((kernel_size, kernel_size), np.uint8) # kernel size is the number of pixels around the pixel being examined
     closing = cv2.morphologyEx(
         threshold_mask, cv2.MORPH_CLOSE, kernel, iterations=3)
 
     # erosion
-    kernel = np.ones((3, 3), np.uint8)
+    kernel = np.ones((kernel_size, kernel_size), np.uint8)
     thresh_erosion = cv2.erode(closing, kernel, iterations=3)
 
     # opening
-    kernel = np.ones((3, 3), np.uint8)
+    kernel = np.ones((kernel_size, kernel_size), np.uint8)
     opening = cv2.morphologyEx(
         thresh_erosion, cv2.MORPH_OPEN, kernel, iterations=4)
 
     # dilation
-    kernel = np.ones((3, 3), np.uint8)
+    kernel = np.ones((kernel_size, kernel_size), np.uint8)
     thresh_dilation = cv2.dilate(opening, kernel, iterations=2)
 
     return thresh_dilation
 
-def area_filter(threshold_mask):
+def area_filter(threshold_mask, min_size):
     """
     Filters out groups of pixels that are below 700 pixels in area.
 
@@ -203,7 +203,7 @@ def area_filter(threshold_mask):
     """
     image = threshold_mask.copy()
     arr = image > 0
-    area_filtered = morphology.remove_small_objects(arr, min_size=700) # configure this!! *************************
+    area_filtered = morphology.remove_small_objects(arr, min_size=min_size) # configure this!! *************************
 
     area_filtered = img_as_ubyte(area_filtered)
 
@@ -254,26 +254,28 @@ def main():
     parser.add_argument('--weights_file',
                         help='Specify the path to the weights file')
     parser.add_argument('image_files', nargs='+')
-    args = parser.parse_args()
-    args.write_nn_mask = '--write_nn_mask'
-    args.write_threshold_mask = '--write_threshold_mask'
-    args.write_area_filtered = '--write_area_filtered'
+    # cli means command line
+    cli_args = parser.parse_args()
+    cli_args.write_nn_mask = '--write_nn_mask' #so if '--write_nn_mask' was written on the terminal, write_nn_mask would happen
+    cli_args.write_threshold_mask = '--write_threshold_mask'
+    cli_args.write_area_filtered = '--write_area_filtered'
 
     make_directories() # in the Results folder, make the three configuration folders
 
-    if args.weights_file is None:
-        args.weights_file = 'weights.pt'
+    if cli_args.weights_file is None:
+        cli_args.weights_file = 'weights.pt'
 
+    global args
+    args = { # if command line configurations were given, they are assigned to keys.
+        "weights_file": cli_args.weights_file,
+        "write_nn_mask": cli_args.write_nn_mask,
+        "write_threshold_mask": cli_args.write_threshold_mask,
+        "write_area_filtered": cli_args.write_area_filtered,
+        "config": PPConfig(os.getcwd())
+    }
 
-    #os.chdir(ppGUI.folderSelected())
-    #cwd = os.getcwd()
-
-    #cwd = os.getcwd()
-    #print(cwd)
-    for filename in args.image_files: # for each .tif file
+    for filename in cli_args.image_files: # for each .tif file
         process_image(filename, args)
-
-    #os.chdir('../')
 
 
 
