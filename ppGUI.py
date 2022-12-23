@@ -127,12 +127,19 @@ def open_file():
 def run_process_images():
     # build args here after clicking RUN
 
+    args = {
+        "weights_file": cli_args.weights_file,
+        "write_nn_mask": cli_args.write_nn_mask,
+        "write_threshold_mask": cli_args.write_threshold_mask,
+        "write_area_filtered": cli_args.write_area_filtered,
+        "config": PPConfig(os.getcwd())
+    }
     #for each image in the Images directory:
         process_images.process_image(image, args)
 
     #process_images.process_image()
-    command = "python3 process_images.py *tif"
-    os.system(command)
+    #command = "python3 process_images.py *tif"
+    #os.system(command)
 
 def get_tif_files():
     cwd = os.getcwd() # Get the file path of the directory with the images

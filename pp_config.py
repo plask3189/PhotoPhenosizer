@@ -8,12 +8,15 @@ class PPConfig:
         # ------------------ instance variables -----------------
         self.filename = os.path.join(project_directory, 'config.ini') # create a config.ini file in the project directory.
         self.config_parser = ConfigParser()
+
         self.threshold = 200
         self.kernel_size = 3
         self.min_size = 700
-        self.weights_file = os.path.join(project_directory, 'weights.pt')
+        
+        if os.path.isfile(self.filename): # if there is already a 'config.ini' file, we read the values from the parser and overwrite the defaults
 
-        if os.path.isfile(self.filename): # if there is already a 'config.ini' file
+            self.weights_file = os.path.join(project_directory, 'weights.pt')
+
             self.config_parser.read(self.filename)
             sections = self.config_parser.sections()
 
@@ -32,6 +35,7 @@ class PPConfig:
             self.write_config()
 
     def write_config(self):
+
         self.config_parser['IMAGEPROCESSING'] = {
             'threshold': self.threshold,
             'kernel_size': self.kernel_size,

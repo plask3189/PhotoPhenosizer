@@ -23,32 +23,38 @@ from pp_config import PPConfig
 
 config_object = ConfigParser()
 config_object.read("config.ini") # Read the config.ini file that is generated from pp_config.py
+global results_directory_name
+
+#make_directories(os.getcwd) # in the Results folder, make the three configuration folders
 
 
 
-def make_directories():
+# ----------- Make results directory ---------
+current_time = datetime.now() # datetime object containing current date and time
+date_and_time_string = current_time.strftime("Results %Y-%m-%d %H-%M-%S")
+global results_directory_name
+results_directory_name = date_and_time_string
+#x = str(os.path.join(project_directory, results_directory_name))
+os.makedirs(results_directory_name, exist_ok=True) # Make the directory called results_directory_name so that we can add the csv files to this directory
+print(results_directory_name)
 
-    # ----------- Make results directory ---------
-    current_time = datetime.now() # datetime object containing current date and time
-    date_and_time_string = current_time.strftime("Results %Y-%m-%d %H-%M-%S")
-    global results_directory_name
-    results_directory_name = date_and_time_string
-    os.makedirs(results_directory_name, exist_ok=True) # Make the directory called results_directory_name so that we can add the csv files to this directory
 
-    # ----------- Make area_filtered_masks directory ---------
-    area_filtered_masks_directory = 'area_filtered_masks'
-    path_for_area_filtered_masks_directory = os.path.join(results_directory_name, area_filtered_masks_directory) # The results_directory_name is the parent directory for area_filtered_masks_directory
-    os.mkdir(path_for_area_filtered_masks_directory)
+# ----------- Make area_filtered_masks directory ---------
+area_filtered_masks_directory = 'area_filtered_masks'
+path_for_area_filtered_masks_directory = os.path.join(results_directory_name, area_filtered_masks_directory) # The results_directory_name is the parent directory for area_filtered_masks_directory
+os.mkdir(path_for_area_filtered_masks_directory)
 
-    # ----------- Make nn_masks directory ---------
-    nn_masks_directory = 'nn_masks'
-    path_for_nn_masks_directory = os.path.join(results_directory_name, nn_masks_directory) # The results_directory_name is the parent directory for nn_masks_directory
-    os.mkdir(path_for_nn_masks_directory)
+# ----------- Make nn_masks directory ---------
+nn_masks_directory = 'nn_masks'
+path_for_nn_masks_directory = os.path.join(results_directory_name, nn_masks_directory) # The results_directory_name is the parent directory for nn_masks_directory
+os.mkdir(path_for_nn_masks_directory)
 
-    # ----------- Make threshold_masks directory ---------
-    threshold_masks_directory = 'threshold_masks'
-    path_for_threshold_masks_directory = os.path.join(results_directory_name, threshold_masks_directory) # The results_directory_name is the parent directory for threshold_masks_directory
-    os.mkdir(path_for_threshold_masks_directory)
+# ----------- Make threshold_masks directory ---------
+threshold_masks_directory = 'threshold_masks'
+path_for_threshold_masks_directory = os.path.join(results_directory_name, threshold_masks_directory) # The results_directory_name is the parent directory for threshold_masks_directory
+os.mkdir(path_for_threshold_masks_directory)
+
+
 
 
 
@@ -70,6 +76,7 @@ def write_image(original_filename, string_label, image):
     new_filename = original_path.with_stem(new_stem) # print(new_filename)   output: 522_1_1-nn_mask.tif
 
     #----------- Add the mask images to their respective directories -------------
+    global results_directory_name
     os.chdir(results_directory_name) # The current working directory is the project directory, so we need to change it to the results directory which is where the images and other subdirectories will be placed.
 
     if string_label == '-nn_mask': # Check if the image created ends with 'nn-mask'
@@ -111,7 +118,7 @@ def process_image(image_filename, args):
     area_filtered = area_filter(threshold_mask, args["config"].min_size)
     # Comment iou function out if no need for it
     # calculate_iou(label_img_area)
-    write_dimensions(area_filtered, image_filename)
+    write_dimensions(area_filtered, image_filename, results_directory_name)
     if args['write_nn_mask']:
         write_image(image_filename, '-nn_mask', nn_mask)
     if args["write_threshold_mask"]:
@@ -154,7 +161,7 @@ def nn_predict(input_img, weights_filename):
     return out
 
 
-def threshold(nn_mask, theshold_value):
+def threshold(nn_mask, threshold_value):
     """
     Thresholds the NN image
 
@@ -210,7 +217,7 @@ def area_filter(threshold_mask, min_size):
     return area_filtered
 
 
-def write_dimensions(area_filtered, image_filename):
+def write_dimensions(area_filtered, image_filename, results_directory_name):
     """
     Write the dimensions for the cell dimensions in a csv file. The dimensions are measured
     using scikit-image's regionprops_table function. Area is represented by area_filled,
@@ -243,6 +250,7 @@ def main():
     Main function with listed arguments that can be passed through
     the terminal
     """
+
     parser = ArgumentParser()
     parser.add_argument('--write_nn_mask', action='store_true',
                         help='Write the mask images produced by the neural '
@@ -260,7 +268,7 @@ def main():
     cli_args.write_threshold_mask = '--write_threshold_mask'
     cli_args.write_area_filtered = '--write_area_filtered'
 
-    make_directories() # in the Results folder, make the three configuration folders
+
 
     if cli_args.weights_file is None:
         cli_args.weights_file = 'weights.pt'
@@ -273,6 +281,7 @@ def main():
         "write_area_filtered": cli_args.write_area_filtered,
         "config": PPConfig(os.getcwd())
     }
+    
 
     for filename in cli_args.image_files: # for each .tif file
         process_image(filename, args)
@@ -280,4 +289,5 @@ def main():
 
 
 if __name__ == "__main__":
+
     main()
