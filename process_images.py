@@ -169,6 +169,8 @@ def threshold(nn_mask, threshold_value):
     :return: the threshold mask of the NN image
     """
 
+    print('threshold:', threshold_value)
+
     # turns threshold into white (255)
     th, threshold_mask = cv2.threshold(nn_mask, threshold_value, 255, cv2.THRESH_BINARY)
     return threshold_mask
@@ -268,20 +270,21 @@ def main():
     cli_args.write_threshold_mask = '--write_threshold_mask'
     cli_args.write_area_filtered = '--write_area_filtered'
 
-
-
     if cli_args.weights_file is None:
         cli_args.weights_file = 'weights.pt'
 
+    # create results directory here
+
     global args
     args = { # if command line configurations were given, they are assigned to keys.
+        # add "results_directory" here
         "weights_file": cli_args.weights_file,
         "write_nn_mask": cli_args.write_nn_mask,
         "write_threshold_mask": cli_args.write_threshold_mask,
         "write_area_filtered": cli_args.write_area_filtered,
         "config": PPConfig(os.getcwd())
     }
-    
+
 
     for filename in cli_args.image_files: # for each .tif file
         process_image(filename, args)

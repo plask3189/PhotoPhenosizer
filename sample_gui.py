@@ -5,7 +5,6 @@ from tkinter import ttk
 from tkinter.ttk import *
 from tkinter import filedialog
 from tkinter.filedialog import askopenfile
-
 from tkinter import Tk
 from tkinter.ttk import Label
 from tkinter import *
@@ -15,11 +14,10 @@ import process_images
 import pp_config
 from pp_config import PPConfig
 import configparser
-
 from PIL import ImageTk, Image
 from configparser import ConfigParser
 
-# the kickoff frame is where the files can be chosen
+# the kickoff frame is where the project directory is chosen
 def kickoff_window():
     global window
     window = tk.Tk()
@@ -53,7 +51,7 @@ def kickoff_window():
 
     return window
 
-
+# -------------------------------- Open project directory ----------------------------
 def open_file():
     global folder_selected_as_project_directory
     folder_selected_as_project_directory = filedialog.askdirectory() # folder selected should be the folder with the tif files
@@ -64,6 +62,7 @@ def open_file():
         entry_box_for_file_path.insert(tk.END, folder_selected_as_project_directory)
         get_tif_files()
 
+# -------------------------------- Clear kickoff window ----------------------------
 def should_we_clear_window():
     # destroy the kickoff window
     entry_box_for_file_path.destroy()
@@ -73,8 +72,12 @@ def should_we_clear_window():
     cleared = 1
     create_second_window()
 
+# -------------------------------- Create second window ----------------------------
 def create_second_window():
     if (cleared == 1):
+        global folder_selected_as_project_directory
+        config = PPConfig(folder_selected_as_project_directory)
+
         color = '#0C064A'
         window.configure(bg = color)
         fontColor = '#FFFFFF'
@@ -82,7 +85,7 @@ def create_second_window():
         threshold_label.place(relx=0.4, rely=0.2, anchor=CENTER)
         global threshold_entry_box
         threshold_entry_box = tk.Entry(window, bd =5)
-        threshold_entry_box.insert(END, '200')
+        threshold_entry_box.insert(END, str(config.threshold))
         threshold_entry_box.place(relx=0.6, rely=0.2, anchor=CENTER)
 
         #--------------- Label and text entry box for kernel size ------------
@@ -90,7 +93,7 @@ def create_second_window():
         kernel_size_label.place(relx=0.4, rely=0.3, anchor=CENTER)
         global kernel_size_entry_box
         kernel_size_entry_box = tk.Entry(window, bd =5)
-        kernel_size_entry_box.insert(END, '3')
+        kernel_size_entry_box.insert(END, str(config.kernel_size))
         kernel_size_entry_box.place(relx=0.6, rely=0.3, anchor=CENTER)
         kernel_size_input_value = kernel_size_entry_box.get()
 
@@ -101,13 +104,13 @@ def create_second_window():
         min_size_label.place(relx=0.4, rely=0.4, anchor=CENTER)
         global min_size_entry_box
         min_size_entry_box = tk.Entry(window, bd =5)
-        min_size_entry_box.insert(END, '700')
+        min_size_entry_box.insert(END, str(config.min_size))
         min_size_entry_box.place(relx=0.6, rely=0.4, anchor=CENTER)
 
         #-------------to upload weights file------------------
         global entry_box_for_weights_path
         entry_box_for_weights_path=tk.Entry(window, width = 60, font=40)
-        entry_box_for_weights_path.insert(END, str(os.getcwd()) +'/weights.pt') # automatically chose the weights.pt file that is in the main project directory
+        entry_box_for_weights_path.insert(END, os.path.join(folder_selected_as_project_directory, config.weights_file)) # automatically chose the weights.pt file that is in the main project directory
         entry_box_for_weights_path.place(relx=0.5, rely=0.5, anchor=CENTER)
         file_image_to_click = PhotoImage(file='weights_file_upload_image.png')
 
@@ -125,10 +128,10 @@ def create_second_window():
         uploadCellImageFolderButton = Button(window, text ='Run', command = on_click)
         uploadCellImageFolderButton.place(relx=0.5, rely=0.7, anchor=CENTER)
 
+# ---------------------------- Second window reference methods ----------------------------
 def open_weights_file():
      global weights_file_selected
      weights_file_selected = filedialog.askdirectory() # ask what weights file to use.
-
 
 def checkbox_selection():
          x =1 # just a filler
@@ -142,27 +145,36 @@ def on_click():
     run_process_images()
 
 def run_process_images():
-    print(os.getcwd())
-    configuration = PPConfig
-    configuration = PPConfig(os.getcwd())
+    global folder_selected_as_project_directory
+    print(folder_selected_as_project_directory)
+    configuration = PPConfig(folder_selected_as_project_directory)
+
+    configuration.threshold = int(threshold_entry_box.get())
+    configuration.kernel_size = int(kernel_size_entry_box.get())
+    configuration.min_size = int(min_size_entry_box.get())
+    configuration.write_config()
+
+    # create results directory here
+
     global args
     args = {
+        # add "results_directory" here
         "weights_file": entry_box_for_weights_path.get(),
         "write_nn_mask": kernel_size_entry_box.get(),
         "write_threshold_mask": threshold_entry_box.get(),
         "write_area_filtered" : min_size_entry_box.get(),
-        "config": PPConfig(os.getcwd())
+        "config": configuration
     }
 
-    config_object = ConfigParser()
-    config_object.read("config.ini")
-    image_processing_section = config_object["IMAGEPROCESSING"]
-    image_processing_section['threshold'] = str(threshold_entry_box.get())
-    image_processing_section['kernel_size'] = str(kernel_size_entry_box.get())
-    image_processing_section['min_size'] = str(min_size_entry_box.get())
-
-    with open('config.ini', 'w') as conf:
-        config_object.write(conf)
+    # config_object = ConfigParser()
+    # config_object.read("config.ini")
+    # image_processing_section = config_object["IMAGEPROCESSING"]
+    # image_processing_section['threshold'] = str(threshold_entry_box.get())
+    # image_processing_section['kernel_size'] = str(kernel_size_entry_box.get())
+    # image_processing_section['min_size'] = str(min_size_entry_box.get())
+    #
+    # with open('config.ini', 'w') as conf:
+    #     config_object.write(conf)
 
     #for each image in the Images directory:
     for image in list_of_tif_files_in_directory:
@@ -171,7 +183,6 @@ def run_process_images():
 
 
 def get_tif_files():
-    cwd = os.getcwd() # Get the file path of the directory with the images
     global list_of_tif_files_in_directory
     list_of_tif_files_in_directory = []
     list_of_files_in_project_directory = os.listdir(os.path.join(folder_selected_as_project_directory, "Images"))
@@ -188,16 +199,16 @@ def update_GUI():
 
 
 #------------------------ Configuration ------------------------
-def getInput():
-    # ------- get input for theshold -----------
-    global threshold_input_value
-    threshold_input_value = threshold_entry_box.get() # get the input text
-    # ------- get input for min size -----------
-    global min_size_input_value
-    min_size_input_value = min_size_entry_box.get() # get the input text
-    # ------- get input for kernel_size -----------
-    global kernel_size_input_value
-    kernel_size_input_value = kernel_size_entry_box.get()
+# def getInput():
+#     # ------- get input for theshold -----------
+#     global threshold_input_value
+#     threshold_input_value = threshold_entry_box.get() # get the input text
+#     # ------- get input for min size -----------
+#     global min_size_input_value
+#     min_size_input_value = min_size_entry_box.get() # get the input text
+#     # ------- get input for kernel_size -----------
+#     global kernel_size_input_value
+#     kernel_size_input_value = kernel_size_entry_box.get()
 
 
 def main(): # main listens for events to happen
