@@ -16,6 +16,7 @@ from pp_config import PPConfig
 import configparser
 from PIL import ImageTk, Image
 from configparser import ConfigParser
+import make_directories
 
 # the kickoff frame is where the project directory is chosen
 def kickoff_window():
@@ -32,7 +33,11 @@ def kickoff_window():
     introTextLine1 = Label(window, text = 'Welcome to Photo Phenosizer', font = ('Arial', 50), bg = color, fg = fontColor)
     introTextLine1.place(relx=0.5, rely=0.1, anchor=CENTER)
 
-    #-------------------Folder upload-----------------
+    #------------------- Main directory selection-----------------
+    global ask_to_select_main_directory_label
+    ask_to_select_main_directory_label = Label(window, text = 'Select the project directory:', font = ('Arial', 15), bg = color, fg = fontColor)
+    ask_to_select_main_directory_label.place(relx=0.32, rely=0.25, anchor=CENTER)
+
     global entry_box_for_file_path
     entry_box_for_file_path=tk.Entry(window, width = 60, font=40)
     entry_box_for_file_path.place(relx=0.5, rely=0.3, anchor=CENTER)
@@ -68,6 +73,7 @@ def should_we_clear_window():
     entry_box_for_file_path.destroy()
     folder_image_button.destroy()
     next_button.destroy()
+    ask_to_select_main_directory_label.destroy()
     global cleared
     cleared = 1
     create_second_window()
@@ -108,6 +114,9 @@ def create_second_window():
         min_size_entry_box.place(relx=0.6, rely=0.4, anchor=CENTER)
 
         #-------------to upload weights file------------------
+        ask_to_select_weights_file_label = Label(window, text = 'Select the weights file:', font = ('Arial', 15), bg = color, fg = fontColor)
+        ask_to_select_weights_file_label.place(relx=0.1, rely=0.5, anchor=CENTER)
+
         global entry_box_for_weights_path
         entry_box_for_weights_path=tk.Entry(window, width = 60, font=40)
         entry_box_for_weights_path.insert(END, os.path.join(folder_selected_as_project_directory, config.weights_file)) # automatically chose the weights.pt file that is in the main project directory
@@ -119,25 +128,26 @@ def create_second_window():
         file_image_button= Button(window, image = file_image_to_click,command= open_weights_file, borderwidth=0, height= 23, width= 25)
         file_image_button.place(relx=0.758, rely=0.5, anchor=CENTER)
 
-        #----------------------- Checkboxes ----------------------------------
-        var1 = 0
-        c1 = tk.Checkbutton(window, text='Check here if you would like area filtered masks, nn masks, and threshold masks',variable=var1, onvalue=1, offvalue=0, command=checkbox_selection)
+        #----------------------- Checkbox ----------------------------------
+        global var1
+        var1 = tk.IntVar()
+        c1 = tk.Checkbutton(window, text='Check here if you would like to save area filtered, NN, and threshold mask images',variable=var1, onvalue=1, offvalue=0, command=make_directories_here)
+        c1.select() #automatically checks this button
         c1.place(relx=0.5, rely=0.6, anchor=CENTER)
 
         # ------------------------------- Run ---------------------
         uploadCellImageFolderButton = Button(window, text ='Run', command = on_click)
         uploadCellImageFolderButton.place(relx=0.5, rely=0.7, anchor=CENTER)
 
-# ---------------------------- Second window reference methods ----------------------------
+# ---------------------------- Second window reference methods ---------------------
 def open_weights_file():
      global weights_file_selected
      weights_file_selected = filedialog.askdirectory() # ask what weights file to use.
 
-def checkbox_selection():
-         x =1 # just a filler
-    #     if var1.get ==1: # if the box is checked
-            # call process_images.make_directories()
-        # else do nothing. do not make directories.
+def make_directories_here():
+    make_directories.make_results_directory()
+    if(var1.get() == 1):
+        make_directories.make_mask_directories()
 
 def on_click():
     get_tif_files()
@@ -146,7 +156,6 @@ def on_click():
 
 def run_process_images():
     global folder_selected_as_project_directory
-    print(folder_selected_as_project_directory)
     configuration = PPConfig(folder_selected_as_project_directory)
 
     configuration.threshold = int(threshold_entry_box.get())
@@ -154,11 +163,11 @@ def run_process_images():
     configuration.min_size = int(min_size_entry_box.get())
     configuration.write_config()
 
-    # create results directory here
+    make_directories_here()
 
     global args
     args = {
-        # add "results_directory" here
+        "results_directory": make_directories.get_results_directory(),
         "weights_file": entry_box_for_weights_path.get(),
         "write_nn_mask": kernel_size_entry_box.get(),
         "write_threshold_mask": threshold_entry_box.get(),
@@ -166,26 +175,16 @@ def run_process_images():
         "config": configuration
     }
 
-    # config_object = ConfigParser()
-    # config_object.read("config.ini")
-    # image_processing_section = config_object["IMAGEPROCESSING"]
-    # image_processing_section['threshold'] = str(threshold_entry_box.get())
-    # image_processing_section['kernel_size'] = str(kernel_size_entry_box.get())
-    # image_processing_section['min_size'] = str(min_size_entry_box.get())
-    #
-    # with open('config.ini', 'w') as conf:
-    #     config_object.write(conf)
-
     #for each image in the Images directory:
     for image in list_of_tif_files_in_directory:
         process_images.process_image(image, args)
-        #print(args)
+
 
 
 def get_tif_files():
     global list_of_tif_files_in_directory
     list_of_tif_files_in_directory = []
-    list_of_files_in_project_directory = os.listdir(os.path.join(folder_selected_as_project_directory, "Images"))
+    list_of_files_in_project_directory = os.listdir(os.path.join(folder_selected_as_project_directory, "Images")) # get the Images directory within the project directory
 
     for filename_to_examine_for_tif_suffix in list_of_files_in_project_directory: # traverse whole directory
         if filename_to_examine_for_tif_suffix.endswith('.tif'): # check the extension of files
@@ -196,19 +195,6 @@ def update_GUI():
     black_font_color = '#000000'
     tif_files_that_will_run_through_process_images = Label(window, text = str(list_of_tif_files_in_directory ), font = ('Arial', 20), fg = black_font_color)
     tif_files_that_will_run_through_process_images.place(relx=0.5, rely=0.8, anchor=CENTER)
-
-
-#------------------------ Configuration ------------------------
-# def getInput():
-#     # ------- get input for theshold -----------
-#     global threshold_input_value
-#     threshold_input_value = threshold_entry_box.get() # get the input text
-#     # ------- get input for min size -----------
-#     global min_size_input_value
-#     min_size_input_value = min_size_entry_box.get() # get the input text
-#     # ------- get input for kernel_size -----------
-#     global kernel_size_input_value
-#     kernel_size_input_value = kernel_size_entry_box.get()
 
 
 def main(): # main listens for events to happen

@@ -7,7 +7,7 @@ class PPConfig:
     def __init__(self, project_directory): # parameter is project_directory to be able to get process_images.py and load configs
         # ------------------ instance variables -----------------
         self.filename = os.path.join(project_directory, 'config.ini') # create a config.ini
-        print(self.filename)
+        #print(self.filename)
         self.config_parser = ConfigParser()
 
         self.threshold = 200
@@ -21,7 +21,7 @@ class PPConfig:
             self.config_parser.read(self.filename)
             sections = self.config_parser.sections()
 
-            print(sections)
+            #print(sections) prints: ['IMAGEPROCESSING', 'NN']
 
             if 'IMAGEPROCESSING' in sections:
                 if 'threshold' in self.config_parser['IMAGEPROCESSING']:

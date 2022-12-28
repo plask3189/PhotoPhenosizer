@@ -17,48 +17,16 @@ from configparser import ConfigParser
 import feret
 from datetime import datetime
 from pp_config import PPConfig
-
+import make_directories
 
 
 
 config_object = ConfigParser()
 config_object.read("config.ini") # Read the config.ini file that is generated from pp_config.py
-global results_directory_name
-
-#make_directories(os.getcwd) # in the Results folder, make the three configuration folders
 
 
 
-# ----------- Make results directory ---------
-current_time = datetime.now() # datetime object containing current date and time
-date_and_time_string = current_time.strftime("Results %Y-%m-%d %H-%M-%S")
-global results_directory_name
-results_directory_name = date_and_time_string
-#x = str(os.path.join(project_directory, results_directory_name))
-os.makedirs(results_directory_name, exist_ok=True) # Make the directory called results_directory_name so that we can add the csv files to this directory
-print(results_directory_name)
-
-
-# ----------- Make area_filtered_masks directory ---------
-area_filtered_masks_directory = 'area_filtered_masks'
-path_for_area_filtered_masks_directory = os.path.join(results_directory_name, area_filtered_masks_directory) # The results_directory_name is the parent directory for area_filtered_masks_directory
-os.mkdir(path_for_area_filtered_masks_directory)
-
-# ----------- Make nn_masks directory ---------
-nn_masks_directory = 'nn_masks'
-path_for_nn_masks_directory = os.path.join(results_directory_name, nn_masks_directory) # The results_directory_name is the parent directory for nn_masks_directory
-os.mkdir(path_for_nn_masks_directory)
-
-# ----------- Make threshold_masks directory ---------
-threshold_masks_directory = 'threshold_masks'
-path_for_threshold_masks_directory = os.path.join(results_directory_name, threshold_masks_directory) # The results_directory_name is the parent directory for threshold_masks_directory
-os.mkdir(path_for_threshold_masks_directory)
-
-
-
-
-
-def write_image(original_filename, string_label, image):
+def write_image(original_filename, string_label, image, results_directory):
     """
     Writes an image to a file. The filename is constructed by inserting string_label
     before the extension of original_filename.
@@ -76,26 +44,35 @@ def write_image(original_filename, string_label, image):
     new_filename = original_path.with_stem(new_stem) # print(new_filename)   output: 522_1_1-nn_mask.tif
 
     #----------- Add the mask images to their respective directories -------------
-    global results_directory_name
-    os.chdir(results_directory_name) # The current working directory is the project directory, so we need to change it to the results directory which is where the images and other subdirectories will be placed.
+
+    os.chdir(results_directory) # The current working directory is the project directory, so we need to change it to the results directory which is where the images and other subdirectories will be placed.
 
     if string_label == '-nn_mask': # Check if the image created ends with 'nn-mask'
-        #os.chdir('nn_masks') # Change the working directory to 'nn_masks'
-        new_path = os.path.join(results_directory_name, 'nn_masks', str(new_filename))
-        cv2.imwrite(new_path, image) # saves the image to the filepath called new_filename to the current working directory
+        new_path2 = os.path.join(os.getcwd(), 'nn_masks')
+        if(os.path.exists(new_path2)): # chek to see that there is an 'nn_masks' directory in the results folder. This folder would have been made if the checkbox was checked in the gui.
+            os.chdir('nn_masks') # Change the working directory to 'nn_masks'
+            new_path = os.path.join(results_directory, 'nn_masks', str(new_filename))
 
-        #os.chdir('../') # move back up to the parent directory (aka the results directory)
+            cv2.imwrite(str(new_filename), image) # saves the image to the filepath called new_filename to the current working directory
+            os.chdir('../') # move back up to the parent directory (aka the results directory)
 
     if string_label == '-area_filtered': # Check if the image created ends with '-area_filtered'
-        os.chdir('area_filtered_masks') # Change the working directory to 'area_filtered_masks'
-        cv2.imwrite(str(new_filename), image) # saves the image to the filepath called new_filename to the current working directory
-        os.chdir('../') # move back up to the parent directory (aka the results directory)
+        new_path2 = os.path.join(os.getcwd(), 'area_filtered_masks')
+        if(os.path.exists(new_path2)): # chek to see that there is an 'nn_masks' directory in the
+            os.chdir('area_filtered_masks') # Change the working directory to 'area_filtered_masks'
+            new_path = os.path.join(results_directory, 'area_filtered', str(new_filename))
+            cv2.imwrite(str(new_filename), image) # saves the image to the filepath called new_filename to the current working directory
+            os.chdir('../') # move back up to the parent directory (aka the results directory)
 
     if string_label == '-threshold': # Check if the image created ends with '-threshold'
-        os.chdir('threshold_masks') # Change the working directory to 'threshold_masks'
-        cv2.imwrite(str(new_filename), image) # saves the image to the filepath called new_filename to the current working directory
-        os.chdir('../') # move back up to the parent directory (aka the results directory)
-    os.chdir('../') # move back to the main project directory
+        new_path2 = os.path.join(os.getcwd(), 'threshold_masks')
+        if(os.path.exists(new_path2)): # chek to see that there is an 'nn_masks' directory in the
+            os.chdir('threshold_masks') # Change the working directory to 'threshold_masks'
+            new_path = os.path.join(results_directory, 'threshold', str(new_filename))
+            cv2.imwrite(str(new_filename), image) # saves the image to the filepath called new_filename to the current working directory
+            os.chdir('../') # move back up to the parent directory (aka the results directory)
+
+    os.chdir('../') # move back to the main project directory from the results directory
 
 
 def process_image(image_filename, args):
@@ -108,23 +85,25 @@ def process_image(image_filename, args):
     :param args: any arguments that was passed from the user
     to the terminal.
 
-     args is a dictionary with
+     args is a dictionary that is defined either in main or from the sample_gui.
+
     """
+
 
     input_img = Image.open(image_filename).convert("RGB")
     nn_mask = nn_predict(input_img, args['weights_file'])
     threshold_mask = threshold(nn_mask, args["config"].threshold)
     threshold_mask = erod_dilate(threshold_mask, args["config"].kernel_size)
     area_filtered = area_filter(threshold_mask, args["config"].min_size)
-    # Comment iou function out if no need for it
-    # calculate_iou(label_img_area)
-    write_dimensions(area_filtered, image_filename, results_directory_name)
-    if args['write_nn_mask']:
-        write_image(image_filename, '-nn_mask', nn_mask)
+
+    results_directory = args['results_directory']
+    write_dimensions(area_filtered, image_filename, results_directory)
+    if args['write_nn_mask']: # With the key, get the dictionary value
+        write_image(image_filename, '-nn_mask', nn_mask, results_directory) # write the image by
     if args["write_threshold_mask"]:
-        write_image(image_filename, '-threshold', threshold_mask)
+        write_image(image_filename, '-threshold', threshold_mask, results_directory)
     if args["write_area_filtered"]:
-        write_image(image_filename, '-area_filtered', area_filtered)
+        write_image(image_filename, '-area_filtered', area_filtered, results_directory)
 
 
 def nn_predict(input_img, weights_filename):
@@ -168,8 +147,6 @@ def threshold(nn_mask, threshold_value):
     :param nn_mask: the NN image
     :return: the threshold mask of the NN image
     """
-
-    print('threshold:', threshold_value)
 
     # turns threshold into white (255)
     th, threshold_mask = cv2.threshold(nn_mask, threshold_value, 255, cv2.THRESH_BINARY)
@@ -219,7 +196,7 @@ def area_filter(threshold_mask, min_size):
     return area_filtered
 
 
-def write_dimensions(area_filtered, image_filename, results_directory_name):
+def write_dimensions(area_filtered, image_filename, results_directory):
     """
     Write the dimensions for the cell dimensions in a csv file. The dimensions are measured
     using scikit-image's regionprops_table function. Area is represented by area_filled,
@@ -234,7 +211,8 @@ def write_dimensions(area_filtered, image_filename, results_directory_name):
 
     image = area_filtered.copy()
     label_img = label(image)
-    with open(str(Path(results_directory_name) / csv_filename), 'w') as f:
+
+    with open(str(Path(results_directory) / csv_filename), 'w') as f:
         writer = csv.writer(f) # returns a writer object that converts f into a delimited string
         writer.writerow(['Number', 'Area', 'Feret', 'MinFeret'])
 
@@ -246,13 +224,17 @@ def write_dimensions(area_filtered, image_filename, results_directory_name):
             minf = feret.min(label_img_copy, edge=True)
             writer.writerow([region.label, region.area_filled, maxf, minf])
 
+# def get_res_dir():
+#     global results_directory
+#     make_dir = make_directories.main_for_directories()
+#     results_directory = make_directories.get_results_directory() # get_results_directory returns the results directory name
+#     return results_directory
 
 def main():
     """
     Main function with listed arguments that can be passed through
     the terminal
     """
-
     parser = ArgumentParser()
     parser.add_argument('--write_nn_mask', action='store_true',
                         help='Write the mask images produced by the neural '
@@ -264,20 +246,25 @@ def main():
     parser.add_argument('--weights_file',
                         help='Specify the path to the weights file')
     parser.add_argument('image_files', nargs='+')
+    parser.add_argument('--write_results_directory', nargs='+')
     # cli means command line
     cli_args = parser.parse_args()
     cli_args.write_nn_mask = '--write_nn_mask' #so if '--write_nn_mask' was written on the terminal, write_nn_mask would happen
     cli_args.write_threshold_mask = '--write_threshold_mask'
     cli_args.write_area_filtered = '--write_area_filtered'
+    cli_args.get_res_dir = '--write_results_directory'
+
 
     if cli_args.weights_file is None:
         cli_args.weights_file = 'weights.pt'
 
-    # create results directory here
+    make_directories.main_for_directories() # make the directories for results, nn_mask, threshold, and area filtered
+
 
     global args
     args = { # if command line configurations were given, they are assigned to keys.
-        # add "results_directory" here
+        # add " " here
+        "results_directory": make_directories.get_results_directory(),
         "weights_file": cli_args.weights_file,
         "write_nn_mask": cli_args.write_nn_mask,
         "write_threshold_mask": cli_args.write_threshold_mask,
