@@ -88,20 +88,14 @@ def kickoff_window_widgets_to_create_after_pressing_back_button():
 def open_file():
     global folder_has_been_selected
     folder_has_been_selected = 0
-    global images_directory_selected
-    images_directory_selected = filedialog.askdirectory() # Ask to select 'Image' directory which should be located within the project directory.
-    #folder_selected_as_project_directory = filedialog.askdirectory() # folder selected should be the folder with the tif files
-    if images_directory_selected is not None:
+    global folder_selected_as_project_directory
+    folder_selected_as_project_directory = filedialog.askdirectory() # folder selected should be the folder with the tif files
+    if folder_selected_as_project_directory is not None:
         folder_has_been_selected = 1
-        folder_selected_as_project_directory = os.path.dirname(images_directory_selected)
-        # print(folder_selected_as_project_directory) returns /Users/kateplas/Documents/GitHub/PhotoPhenosizerKP
-
         # Change the working directory to the directory where the images are.
-        #os.chdir(images_directory_selected) # change the current working directory to the directory selected.
-
-        entry_box_for_file_path.insert(tk.END, images_directory_selected) # populate the entry box with the file path.
-        get_tif_files(images_directory_selected)
-
+        os.chdir(folder_selected_as_project_directory) # change the current working directory to the directory selected.
+        entry_box_for_file_path.insert(tk.END, folder_selected_as_project_directory) # populate the entry box with the file path.
+        get_tif_files()
 
 # -------------------------------- Clear kickoff window ----------------------------
 def should_we_clear_window(): # destroy the kickoff window
@@ -125,7 +119,6 @@ def create_second_window():
     list_of_second_window_widgets = []
     if (cleared == 1): #if we just cleared the kickoff window, we create the second window.
         global folder_selected_as_project_directory
-        folder_selected_as_project_directory = os.path.dirname(images_directory_selected)
         config = PPConfig(folder_selected_as_project_directory)
         color = '#0C064A'
         window.configure(bg = color)
@@ -206,7 +199,7 @@ def back():
 # ---------------------------- Second window reference methods ---------------------
 def open_weights_file():
      global weights_file_selected
-     weights_file_selected = filedialog.askdirectory() # ask what weights file to use.
+     weights_file_selected = filedialog.askopenfile() # ask what weights file to use.
 
 def make_directories_here():
     make_directories.make_results_directory()
@@ -236,25 +229,35 @@ def run_process_images():
         "write_area_filtered" : min_size_entry_box.get(),
         "config": configuration
     }
+    print(list_of_tif_files_in_directory)
     for image in list_of_tif_files_in_directory: #for each image in the Images directory:
         process_images.process_image(image, args)
 
-def get_tif_files(images_directory_selected_parameter):
+def get_tif_files():
     global list_of_tif_files_in_directory
     list_of_tif_files_in_directory = []
-    list_of_files_in_project_directory = os.listdir(images_directory_selected_parameter) # get the Images directory within the project directory
+    list_of_files_in_project_directory = os.listdir()
     for filename_to_examine_for_tif_suffix in list_of_files_in_project_directory: # traverse whole directory
         if filename_to_examine_for_tif_suffix.endswith('.tif'): # check the extension of files
             list_of_tif_files_in_directory.append(filename_to_examine_for_tif_suffix) # add the tif files to the list_of_files_in_project_directory
+
+
 def return_list_of_images():
     return list_of_tif_files_in_directory
 
-
 def update_GUI():
+    color = '#0C064A'
     return_list_of_images()
-    black_font_color = '#000000'
-    tif_files_that_will_run_through_process_images = Label(window, text = str(list_of_tif_files_in_directory ), font = ('Arial', 20), fg = black_font_color)
+    font_color = '#FFFFFF'
+    tif_files_that_will_run_through_process_images = Label(window, text = str(list_of_tif_files_in_directory ), font = ('Arial', 20), bg = color, fg = font_color)
     tif_files_that_will_run_through_process_images.place(relx=0.5, rely=0.8, anchor=CENTER)
+    #------------- print 'done' message --------------
+    done_label = Label(window, text = 'Done', font = ('Arial', 20), bg = color, fg = font_color)
+    done_label.place(relx=0.5, rely=0.9, anchor=CENTER)
+
+
+
+
 
 
 def main(): # main listens for events to happen
