@@ -47,7 +47,7 @@ def write_image(original_filename, string_label, image, results_directory):
 
     os.chdir(results_directory) # The current working directory is the project directory, so we need to change it to the results directory which is where the images and other subdirectories will be placed.
 
-    if string_label == '-nn_mask': # Check if the image created ends with 'nn-mask'
+    if string_label == '-nn_mask': # Check if the image to be created ends with 'nn-mask'
         new_path2 = os.path.join(os.getcwd(), 'nn_masks')
         if(os.path.exists(new_path2)): # chek to see that there is an 'nn_masks' directory in the results folder. This folder would have been made if the checkbox was checked in the gui.
             os.chdir('nn_masks') # Change the working directory to 'nn_masks'
@@ -88,8 +88,6 @@ def process_image(image_filename, args):
      args is a dictionary that is defined either in main or from the sample_gui.
 
     """
-
-
     input_img = Image.open(image_filename).convert("RGB")
     nn_mask = nn_predict(input_img, args['weights_file'])
     threshold_mask = threshold(nn_mask, args["config"].threshold)
@@ -99,7 +97,7 @@ def process_image(image_filename, args):
     results_directory = args['results_directory']
     write_dimensions(area_filtered, image_filename, results_directory)
     if args['write_nn_mask']: # With the key, get the dictionary value
-        write_image(image_filename, '-nn_mask', nn_mask, results_directory) # write the image by
+        write_image(image_filename, '-nn_mask', nn_mask, results_directory)
     if args["write_threshold_mask"]:
         write_image(image_filename, '-threshold', threshold_mask, results_directory)
     if args["write_area_filtered"]:
@@ -126,17 +124,14 @@ def nn_predict(input_img, weights_filename):
     # nn.Conv2d(?) expects a 4-dimensional input tensor as [batch_size, channels, height, width], so unsqueeze is necessary
     input_img = input_img.unsqueeze(0)
     input_img.to('cpu')
-
     torch.set_grad_enabled(False)
     prediction = model(input_img)
     out = prediction['out'].data.cpu()
-
     # saves output image in a temporary directory to be later deleted
     with TemporaryDirectory() as temp_dir_path:
         temp_file_path = os.path.join(temp_dir_path, 'output.tif')
         save_image(out, temp_file_path)
         out = cv2.imread(temp_file_path, cv2.IMREAD_GRAYSCALE)
-
     return out
 
 
@@ -189,10 +184,8 @@ def area_filter(threshold_mask, min_size):
     """
     image = threshold_mask.copy()
     arr = image > 0
-    area_filtered = morphology.remove_small_objects(arr, min_size=min_size) # configure this!! *************************
-
+    area_filtered = morphology.remove_small_objects(arr, min_size=min_size)
     area_filtered = img_as_ubyte(area_filtered)
-
     return area_filtered
 
 
@@ -208,14 +201,11 @@ def write_dimensions(area_filtered, image_filename, results_directory):
     """
 
     csv_filename = Path(image_filename).with_suffix('.csv') # Get the path of image_filename and add '.csv' to the end
-
     image = area_filtered.copy()
     label_img = label(image)
-
     with open(str(Path(results_directory) / csv_filename), 'w') as f:
         writer = csv.writer(f) # returns a writer object that converts f into a delimited string
         writer.writerow(['Number', 'Area', 'Feret', 'MinFeret'])
-
         for region in regionprops(label_img):
             label_img_copy = label_img.copy()
             label_img_copy[label_img_copy != region.label] = 0
@@ -223,12 +213,6 @@ def write_dimensions(area_filtered, image_filename, results_directory):
             maxf = feret.max(label_img_copy, edge=True)
             minf = feret.min(label_img_copy, edge=True)
             writer.writerow([region.label, region.area_filled, maxf, minf])
-
-# def get_res_dir():
-#     global results_directory
-#     make_dir = make_directories.main_for_directories()
-#     results_directory = make_directories.get_results_directory() # get_results_directory returns the results directory name
-#     return results_directory
 
 def main():
     """
