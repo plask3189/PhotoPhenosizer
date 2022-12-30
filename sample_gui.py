@@ -88,13 +88,19 @@ def kickoff_window_widgets_to_create_after_pressing_back_button():
 def open_file():
     global folder_has_been_selected
     folder_has_been_selected = 0
-    folder_selected_as_project_directory = filedialog.askdirectory() # folder selected should be the folder with the tif files
-    if folder_selected_as_project_directory is not None:
+    global images_directory_selected
+    images_directory_selected = filedialog.askdirectory() # Ask to select 'Image' directory which should be located within the project directory.
+    #folder_selected_as_project_directory = filedialog.askdirectory() # folder selected should be the folder with the tif files
+    if images_directory_selected is not None:
         folder_has_been_selected = 1
+        folder_selected_as_project_directory = os.path.dirname(images_directory_selected)
+        # print(folder_selected_as_project_directory) returns /Users/kateplas/Documents/GitHub/PhotoPhenosizerKP
+
         # Change the working directory to the directory where the images are.
-        os.chdir(folder_selected_as_project_directory) # change the current working directory to the directory selected.
-        entry_box_for_file_path.insert(tk.END, folder_selected_as_project_directory) # populate the entry box with the file path.
-        get_tif_files()
+        #os.chdir(images_directory_selected) # change the current working directory to the directory selected.
+
+        entry_box_for_file_path.insert(tk.END, images_directory_selected) # populate the entry box with the file path.
+        get_tif_files(images_directory_selected)
 
 
 # -------------------------------- Clear kickoff window ----------------------------
@@ -105,12 +111,12 @@ def should_we_clear_window(): # destroy the kickoff window
     ask_to_select_main_directory_label.destroy()
     global cleared
     cleared = 1
-    did_the_user_select_a_project_directory()
+    #did_the_user_select_a_project_directory()
     create_second_window()
 
-def did_the_user_select_a_project_directory(folder_has_been_selected):
-    if(folder_has_been_selected == 0): # Folder has not been selected
-        print('ah')
+# def did_the_user_select_a_project_directory(folder_has_been_selected):
+#     if(folder_has_been_selected == 0): # Folder has not been selected
+#         print('ah')
 
 
 # -------------------------------- Create second window ----------------------------
@@ -119,6 +125,7 @@ def create_second_window():
     list_of_second_window_widgets = []
     if (cleared == 1): #if we just cleared the kickoff window, we create the second window.
         global folder_selected_as_project_directory
+        folder_selected_as_project_directory = os.path.dirname(images_directory_selected)
         config = PPConfig(folder_selected_as_project_directory)
         color = '#0C064A'
         window.configure(bg = color)
@@ -207,11 +214,12 @@ def make_directories_here():
         make_directories.make_mask_directories()
 
 def on_click():
-    get_tif_files()
+    return_list_of_images()
     update_GUI()
     run_process_images()
 
 def run_process_images():
+
     global folder_selected_as_project_directory
     configuration = PPConfig(folder_selected_as_project_directory)
     configuration.threshold = int(threshold_entry_box.get())
@@ -231,16 +239,19 @@ def run_process_images():
     for image in list_of_tif_files_in_directory: #for each image in the Images directory:
         process_images.process_image(image, args)
 
-def get_tif_files():
+def get_tif_files(images_directory_selected_parameter):
     global list_of_tif_files_in_directory
     list_of_tif_files_in_directory = []
-    list_of_files_in_project_directory = os.listdir(os.path.join(folder_selected_as_project_directory, "Images")) # get the Images directory within the project directory
+    list_of_files_in_project_directory = os.listdir(images_directory_selected_parameter) # get the Images directory within the project directory
     for filename_to_examine_for_tif_suffix in list_of_files_in_project_directory: # traverse whole directory
         if filename_to_examine_for_tif_suffix.endswith('.tif'): # check the extension of files
             list_of_tif_files_in_directory.append(filename_to_examine_for_tif_suffix) # add the tif files to the list_of_files_in_project_directory
+def return_list_of_images():
+    return list_of_tif_files_in_directory
+
 
 def update_GUI():
-    get_tif_files()
+    return_list_of_images()
     black_font_color = '#000000'
     tif_files_that_will_run_through_process_images = Label(window, text = str(list_of_tif_files_in_directory ), font = ('Arial', 20), fg = black_font_color)
     tif_files_that_will_run_through_process_images.place(relx=0.5, rely=0.8, anchor=CENTER)

@@ -4,7 +4,6 @@ os.environ['KMP_DUPLICATE_LIB_OK']='True'
 from argparse import ArgumentParser
 from pathlib import Path
 from tempfile import TemporaryDirectory
-
 import cv2
 import torch
 from PIL import Image
