@@ -2,6 +2,9 @@
 
 A rapid machine learning-based method to measure cell dimensions in Schizosaccharomyces pombe (fission yeast).
 
+# Usage Example
+https://youtu.be/gCqRRdH7XLo
+
 ## Description
 
 We have developed a streamline approach to acquiring cell dimensions in S. pombe. With this pipeline, one can go from microscopy images to statistical results about 10x faster using consumer level hardware than manual segmentation and measurements. It is built on the PyTorch framework with the utilization of DeeplabV3 for training purposes. However, any PyTorch trained models that can accept images can be used.
