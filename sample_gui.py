@@ -108,11 +108,6 @@ def should_we_clear_window(): # destroy the kickoff window
     #did_the_user_select_a_project_directory()
     create_second_window()
 
-# def did_the_user_select_a_project_directory(folder_has_been_selected):
-#     if(folder_has_been_selected == 0): # Folder has not been selected
-#         print('ah')
-
-
 # -------------------------------- Create second window ----------------------------
 def create_second_window():
     global list_of_second_window_widgets
@@ -174,13 +169,13 @@ def create_second_window():
         c1.place(relx=0.5, rely=0.6, anchor=CENTER)
         list_of_second_window_widgets.append(c1)
         # ------------------------------- Run Button---------------------
-        uploadCellImageFolderButton = Button(window, text ='Run', command = on_click)
-        uploadCellImageFolderButton.place(relx=0.5, rely=0.7, anchor=CENTER)
-        list_of_second_window_widgets.append(uploadCellImageFolderButton)
+        run_button = Button(window, text ='Run', command = on_click)
+        run_button.place(relx=0.55, rely=0.7, anchor=CENTER)
+        list_of_second_window_widgets.append(run_button)
         # --------------------- Back Button ---------------------
         global back_button
         back_button = Button(window, text ='  Back  ', command = back, borderwidth=0)
-        back_button.place(relx=0.3, rely=0.7, anchor=CENTER)
+        back_button.place(relx=0.4, rely=0.7, anchor=CENTER)
         #list_of_second_window_widgets(back_button)
         return window
 
@@ -254,10 +249,6 @@ def update_GUI():
     #------------- print 'done' message --------------
     done_label = Label(window, text = 'Done', font = ('Arial', 20), bg = color, fg = font_color)
     done_label.place(relx=0.5, rely=0.9, anchor=CENTER)
-
-
-
-
 
 
 def main(): # main listens for events to happen
