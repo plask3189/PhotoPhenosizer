@@ -237,16 +237,13 @@ def main():
     cli_args.write_area_filtered = '--write_area_filtered'
     cli_args.get_res_dir = '--write_results_directory'
 
-
     if cli_args.weights_file is None:
         cli_args.weights_file = 'weights.pt'
 
     make_directories.main_for_directories() # make the directories for results, nn_mask, threshold, and area filtered
 
-
     global args
     args = { # if command line configurations were given, they are assigned to keys.
-        # add " " here
         "results_directory": make_directories.get_results_directory(),
         "weights_file": cli_args.weights_file,
         "write_nn_mask": cli_args.write_nn_mask,
