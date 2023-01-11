@@ -171,33 +171,28 @@ def create_second_window():
         c1.select() #automatically checks this button
         c1.place(relx=0.5, rely=0.6, anchor=CENTER)
         list_of_second_window_widgets.append(c1)
+        #------------------------------- Button Frame---------------------
+        white_color = '#FFFFFF'
+        button_frame_frame = Frame(window, bg = white_color, width = 205, height = 51.25)
+        #button_frame_frame.pack()
+        button_frame_frame.place(relx=0.5, rely=0.7, anchor=CENTER)
+
+        grey_color = '#000000'
+        button_frame = Frame(button_frame_frame, bg = grey_color, width = 200, height = 50)
+        #button_frame.pack()
+        button_frame.place(relx=0.5, rely=0.7, anchor=CENTER)
+
         # ------------------------------- Run Button---------------------
-        run_button = Button(window, text ='Run', command = on_click)
-        run_button.place(relx=0.55, rely=0.7, anchor=CENTER)
+        run_button = Button(button_frame, text ='Run', command = on_click)
+        run_button.place(relx=0.8, rely=0.5, anchor=CENTER)
         list_of_second_window_widgets.append(run_button)
         # --------------------- Back Button ---------------------
         global back_button
-        back_button = Button(window, text ='  Back  ', command = back, borderwidth=0)
-        back_button.place(relx=0.4, rely=0.7, anchor=CENTER)
+        back_button = Button(button_frame, text ='Back', command = back)
+        back_button.place(relx=0.2, rely=0.5, anchor=CENTER)
         #list_of_second_window_widgets(back_button)
-        #---------------------Scroll bar---------------------
-        #make_scroll_bar_section_gui()
-        return window
 
-# def make_scroll_bar_section_gui():
-#     # create the text widget
-#     global text
-#     global scrollbar
-#     text = tk.Text(window, height=10)
-#     text.grid(row=0, column=0, sticky=tk.EW)
-#     scrollbar = ttk.Scrollbar(window, orient='vertical', command=text.yview) # create a scrollbar widget and set its command to the text widget
-#     scrollbar.grid(row=0, column=1, sticky=tk.NS)
-#     text['yscrollcommand'] = scrollbar.set #  communicate back to the scrollbar
-    # add text to the text widget to show the screen
-    # for i in range(1,50):
-    #     position = f'{i}.0'
-    # for image in list_of_tif_files_in_directory:
-    #     text.insert(position, image + '\n');
+        return window
 
 
 def clear_second_window(): # if we press the back button on the second window, we need to clear this second window.
@@ -226,6 +221,9 @@ def on_click(): # when click the RUN button
     return_list_of_images()
     update_GUI()
     run_process_images()
+
+
+
 # *****************************************************************************************************************************************************************************************************
 def run_process_images():
     global folder_selected_as_project_directory
@@ -252,21 +250,36 @@ def run_process_images():
         update_scroll()
         process_images.process_image(image, args)
 # *****************************************************************************************************************************************************************************************************
+
+
+
+
 def update_scroll():
-        # create the text widget
-        global text
-        global scrollbar
-        text = tk.Text(window, height=10)
-        text.grid(row=0, column=0, sticky=tk.EW)
-        scrollbar = ttk.Scrollbar(window, orient='vertical', command=text.yview) # create a scrollbar widget and set its command to the text widget
-        scrollbar.grid(row=0, column=1, sticky=tk.NS)
-        text['yscrollcommand'] = scrollbar.set #  communicate back to the scrollbar
-        # add text to the text widget to show the screen
-        for i in range(1,50):
-            position = f'{i}.0'
-        for image in already_processed:
-            text.insert(position, image + '\n');
-        Tk.update(window)
+    # create the text widget
+    global text
+    global scrollbar
+    color = '#0C064A'
+    fontColor = '#FFFFFF'
+    label_for_scroll_section = Label(window, text = 'Images processed: ', font = ('Arial', 15), bg = color, fg = fontColor)
+    label_for_scroll_section.place(relx=0.5, rely=0.8, anchor=CENTER)
+
+    scroll_frame = Frame(window, bg = '#000000', borderwidth=1, relief="sunken")
+    scroll_frame.place(relx=0.5, rely=0.9, anchor=CENTER) # scroll_frame defines the display location of text of the processed images with a scrollbar.
+    scrollbar_widget = Scrollbar(scroll_frame, orient='vertical')
+    scrollbar_widget.pack(side=RIGHT, fill='y')
+
+    text_widget = Text(scroll_frame, height = 8, width = 30, font=("Arial, 14"), yscrollcommand=scrollbar_widget.set)
+
+    for i in range(1,500):
+        position = f'{i}.0'
+    for image in already_processed: # add text to the text widget to show the screen
+        text_widget.insert(position, image + '\n');
+
+    # Attach the scrollbar with the text widget
+    scrollbar_widget.config(command=text_widget.yview)
+    text_widget.pack()
+
+    Tk.update(window)
 
 def get_tif_files():
     global list_of_tif_files_in_directory
@@ -285,16 +298,6 @@ def update_GUI():
     color = '#0C064A'
     return_list_of_images()
     font_color = '#FFFFFF'
-    # tif_files_that_will_run_through_process_images = Label(window, text = str(list_of_tif_files_in_directory ), font = ('Arial', 20), bg = color, fg = font_color)
-    # tif_files_that_will_run_through_process_images.place(relx=0.5, rely=0.8, anchor=CENTER)
-
-    # for line in list_of_tif_files_in_directory: # for each image in list of Images
-    #     list_of_images_structure.insert(END, str(line))
-    # list_of_images_structure.pack( side = LEFT, fill = BOTH)
-    # scrollbar.config(command = list_of_images_structure.yview)
-
-
-
 
     #------------- print 'done' message --------------
     done_label = Label(window, text = 'Done', font = ('Arial', 20), bg = color, fg = font_color)
