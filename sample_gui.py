@@ -17,7 +17,7 @@ import configparser
 from PIL import ImageTk, Image
 from configparser import ConfigParser
 import make_directories
-
+import tkinter.messagebox
 global folder_has_been_selected
 folder_has_been_selected = 0
 
@@ -118,17 +118,28 @@ def create_second_window():
         color = '#0C064A'
         window.configure(bg = color)
         fontColor = '#FFFFFF'
-        # configurable_values_frame = tk.LabelFrame(window, text="Configurable values", pady=20)
-        # threshold_label = Label(configurable_values_frame, text = 'Threshold value: ', font = ('Arial', 15), bg = color, fg = fontColor)
 
+        #----------------------- Threshold label ---------------------------
         threshold_label = Label(window, text = 'Threshold value: ', font = ('Arial', 15), bg = color, fg = fontColor)
         list_of_second_window_widgets.append(threshold_label)
         threshold_label.place(relx=0.4, rely=0.2, anchor=CENTER)
+
+        #----------------------- More info button for threshold ---------------------------
+        more_info_image = PhotoImage(file='more_info_icon.png')
+        more_info_label = Label(image = more_info_image)
+        more_info_label.image = more_info_image
+        list_of_second_window_widgets.append(more_info_label)
+        more_info_button= Button(window, image = more_info_image,command= threshold_info_popup, borderwidth=0, height= 18, width= 22)
+        list_of_second_window_widgets.append(more_info_button)
+        more_info_button.place(relx=0.32, rely=0.2, anchor=CENTER)
+
+        #----------------------- Checkbox ---------------------------
         global threshold_entry_box
         threshold_entry_box = tk.Entry(window, bd =5)
         list_of_second_window_widgets.append(threshold_entry_box)
         threshold_entry_box.insert(END, str(config.threshold))
         threshold_entry_box.place(relx=0.6, rely=0.2, anchor=CENTER)
+
         #--------------- Label and text entry box for kernel size ------------
         kernel_size_label = Label(window, text = 'Kernel size: ', font = ('Arial', 15), bg = color, fg = fontColor)
         kernel_size_label.place(relx=0.4, rely=0.3, anchor=CENTER)
@@ -139,6 +150,12 @@ def create_second_window():
         kernel_size_entry_box.insert(END, str(config.kernel_size))
         kernel_size_entry_box.place(relx=0.6, rely=0.3, anchor=CENTER)
         kernel_size_input_value = kernel_size_entry_box.get()
+
+        #----------------------- More info button for kernel size ---------------------------
+        more_info_button_for_kernel_size= Button(window, image = more_info_image,command= kernel_size_info_popup, borderwidth=0, height= 18, width= 22)
+        list_of_second_window_widgets.append(more_info_button_for_kernel_size)
+        more_info_button_for_kernel_size.place(relx=0.32, rely=0.3, anchor=CENTER)
+
         #--------------- Label and text entry box for min size ------------
         min_size_label = Label(window, text = 'Min size: ', font = ('Arial', 15), bg = color, fg = fontColor)
         min_size_label.place(relx=0.4, rely=0.4, anchor=CENTER)
@@ -148,6 +165,12 @@ def create_second_window():
         min_size_entry_box.insert(END, str(config.min_size))
         min_size_entry_box.place(relx=0.6, rely=0.4, anchor=CENTER)
         list_of_second_window_widgets.append(min_size_entry_box)
+
+        #----------------------- More info button for min size ---------------------------
+        more_info_button_for_min_size= Button(window, image = more_info_image,command= min_size_info_popup, borderwidth=0, height= 18, width= 22)
+        list_of_second_window_widgets.append(more_info_button_for_min_size)
+        more_info_button_for_min_size.place(relx=0.32, rely=0.4, anchor=CENTER)
+
         #------------- To upload weights file------------------
         ask_to_select_weights_file_label = Label(window, text = 'Select the weights file:', font = ('Arial', 15), bg = color, fg = fontColor)
         ask_to_select_weights_file_label.place(relx=0.1, rely=0.5, anchor=CENTER)
@@ -157,6 +180,7 @@ def create_second_window():
         entry_box_for_weights_path.insert(END, os.path.join(folder_selected_as_project_directory, config.weights_file)) # automatically chose the weights.pt file that is in the main project directory
         list_of_second_window_widgets.append(entry_box_for_weights_path)
         entry_box_for_weights_path.place(relx=0.5, rely=0.5, anchor=CENTER)
+
         file_image_to_click = PhotoImage(file='weights_file_upload_image.png')
         file_image_label = Label(image = file_image_to_click)
         file_image_label.image = file_image_to_click
@@ -178,9 +202,9 @@ def create_second_window():
         button_frame_frame.place(relx=0.5, rely=0.7, anchor=CENTER)
 
         grey_color = '#000000'
-        button_frame = Frame(button_frame_frame, bg = grey_color, width = 200, height = 50)
+        button_frame = Frame(button_frame_frame, bg = grey_color, width = 200.5, height = 49.5)
         #button_frame.pack()
-        button_frame.place(relx=0.5, rely=0.7, anchor=CENTER)
+        button_frame.place(relx=0.5, rely=0.5, anchor=CENTER)
 
         # ------------------------------- Run Button---------------------
         run_button = Button(button_frame, text ='Run', command = on_click)
@@ -193,6 +217,21 @@ def create_second_window():
         #list_of_second_window_widgets(back_button)
 
         return window
+
+def threshold_info_popup():
+    print('threshold')
+    popup_title = "More info on threshold"
+    tkinter.messagebox.showinfo(popup_title,  "I am telling you about what threshold configuration does.")
+def kernel_size_info_popup():
+    # populate popup box with kernel_size info
+    print('hi')
+    popup_title = "More info on kernel size"
+    tkinter.messagebox.showinfo(popup_title,  "I am telling you about what kernel size configuration does.")
+def min_size_info_popup():
+    # populate popup box with min_size info
+    print('hi')
+    popup_title = "More info on min size"
+    tkinter.messagebox.showinfo(popup_title,  "I am telling you about what min size configuration does.")
 
 
 def clear_second_window(): # if we press the back button on the second window, we need to clear this second window.
@@ -219,7 +258,7 @@ def make_directories_here():
 
 def on_click(): # when click the RUN button
     return_list_of_images()
-    update_GUI()
+    #update_GUI()
     run_process_images()
 
 
@@ -246,8 +285,8 @@ def run_process_images():
     already_processed = []
     #print(list_of_tif_files_in_directory)
     for image in list_of_tif_files_in_directory: #for each image in the Images directory:
-        already_processed.append(image)
-        update_scroll()
+        already_processed.append(image) # add the image name to the list of already processed images
+        update_scroll() # update the section with the scrollbar to display images names as they are processed
         process_images.process_image(image, args)
 # *****************************************************************************************************************************************************************************************************
 
