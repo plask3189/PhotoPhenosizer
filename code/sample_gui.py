@@ -20,7 +20,7 @@ import make_directories
 import tkinter.messagebox
 global folder_has_been_selected
 folder_has_been_selected = 0
-
+from pathlib import Path
 def kickoff_window():
     '''
     The kickoff frame is where the project directory is chosen. Once chosen, the user presses the next button which 'routes' to the second window.
@@ -37,15 +37,18 @@ def kickoff_window():
     canvas = Canvas()
     introTextLine1 = Label(window, text = 'Welcome to Photo Phenosizer', font = ('Arial', 50), bg = color, fg = fontColor)
     introTextLine1.place(relx=0.5, rely=0.1, anchor=CENTER)
+
     #------------------- Main directory selection-----------------
     global ask_to_select_main_directory_label
-    ask_to_select_main_directory_label = Label(window, text = 'Select the project directory:', font = ('Arial', 15), bg = color, fg = fontColor)
+    ask_to_select_main_directory_label = Label(window, text = 'Select your project directory:', font = ('Arial', 15), bg = color, fg = fontColor)
     ask_to_select_main_directory_label.place(relx=0.32, rely=0.25, anchor=CENTER)
+
     #------------------- Entry textbox for main directory file path -----------------
     global entry_box_for_file_path
     entry_box_for_file_path=tk.Entry(window, width = 60, font=40)
     entry_box_for_file_path.place(relx=0.5, rely=0.3, anchor=CENTER)
     folder_image_to_click = PhotoImage(file='file_upload_image4.png')
+
     # ----------------- Folder image -------------------
     global folder_image_button
     folder_image_label = Label(image = folder_image_to_click)
@@ -253,7 +256,7 @@ def open_weights_file():
 
 def make_directories_here():
     make_directories.make_results_directory()
-    if(var1.get() == 1):
+    if(var1.get() == 1): # if the user checks the box saying that they want to save the configuration images, make the directories to save those images
         make_directories.make_mask_directories()
 
 def on_click(): # when click the RUN button
@@ -265,13 +268,24 @@ def on_click(): # when click the RUN button
 
 # *****************************************************************************************************************************************************************************************************
 def run_process_images():
+    # parent_of_images_directory = Path(os.getcwd()).resolve().parents[0] # should be photophenosizerkp
+    # print(parent_of_images_directory)
+
     global folder_selected_as_project_directory
+    parent_of_project_directory = Path(folder_selected_as_project_directory).resolve().parents[0] # should be photophenosizerkp
+    print(str(parent_of_project_directory))
+    os.chdir(folder_selected_as_project_directory)
+    make_directories_here()
+
+    #navigate to code directory? j
+    #join(parent_of_project_directoryfolder_selected_as_project_directory)
+    print("hi" + folder_selected_as_project_directory)
     configuration = PPConfig(folder_selected_as_project_directory)
     configuration.threshold = int(threshold_entry_box.get())
     configuration.kernel_size = int(kernel_size_entry_box.get())
     configuration.min_size = int(min_size_entry_box.get())
     configuration.write_config()
-    make_directories_here()
+    #make_directories_here()
     global args
     args = {
         "results_directory": make_directories.get_results_directory(),
@@ -282,9 +296,13 @@ def run_process_images():
         "config": configuration
     }
     global already_processed
+    images_dir_path = os.path.join(folder_selected_as_project_directory, 'Images')
+    print('in sample_gui, the images dir:' + str(images_dir_path))
+    os.chdir(images_dir_path)
     already_processed = []
     #print(list_of_tif_files_in_directory)
     for image in list_of_tif_files_in_directory: #for each image in the Images directory:
+        os.chdir(images_dir_path)
         already_processed.append(image) # add the image name to the list of already processed images
         update_scroll() # update the section with the scrollbar to display images names as they are processed
         process_images.process_image(image, args)
@@ -322,15 +340,26 @@ def update_scroll():
 
 def get_tif_files():
     global list_of_tif_files_in_directory
+    #list_of_all_files_in_directory = []
     list_of_tif_files_in_directory = []
-    list_of_files_in_directory= os.listdir(folder_selected_as_project_directory)
-    #os.path.join(folder_selected_as_project_directory, )
-    for filename_to_examine_for_tif_suffix in list_of_files_in_directory: # traverse whole directory
-        # include the full file path name when appending to the list of tif files
-        if filename_to_examine_for_tif_suffix.endswith('.tif'): # check the extension of files
+    images_dir_name = os.path.join(folder_selected_as_project_directory, 'Images') # Navigate to the images directory
+    print("images dir name: " + images_dir_name)
+    list_of_all_files_in_directory = os.listdir(images_dir_name) # get a list of all names in the Images directory.
+    print(list_of_tif_files_in_directory)
+    for filename_to_examine_for_tif_suffix in list_of_all_files_in_directory: # traverse whole directory
+        if filename_to_examine_for_tif_suffix.endswith('.tif'): # check the extension of files. There is usually a sneaky .DS-Store file that requires us to weed it out.
             list_of_tif_files_in_directory.append(filename_to_examine_for_tif_suffix) # add the tif files to the list_of_files_in_project_directory
 
+    #list_of_all_files_in_directory= listdir(folder_selected_as_project_directory)
+    #os.path.join(folder_selected_as_project_directory, )
+    # for filename_to_examine_for_tif_suffix in list_of_all_files_in_directory: # traverse whole directory
+    #     # include the full file path name when appending to the list of tif files
+    #     if filename_to_examine_for_tif_suffix.endswith('.tif'): # check the extension of files
+    #         list_of_tif_files_in_directory.append(filename_to_examine_for_tif_suffix) # add the tif files to the list_of_files_in_project_directory
+
+
 def return_list_of_images():
+    print(list_of_tif_files_in_directory)
     return list_of_tif_files_in_directory
 
 def update_GUI():
