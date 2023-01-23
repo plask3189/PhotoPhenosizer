@@ -16,7 +16,7 @@ class PPConfig:
             #navigate to the code directory
             parent_of_project_directory = Path(project_directory).resolve().parents[0] # should be photophenosizerkp. Then need to navigate down to the code directory.
             code_directory = os.path.join(parent_of_project_directory, 'code')
-            print(code_directory)
+            print('CODE DIR IN CONFIG' + str(code_directory))
 
 
             self.weights_file = os.path.join(code_directory, 'weights.pt') #get the weights file

@@ -280,7 +280,11 @@ def main():
     cli_args.get_res_dir = '--write_results_directory'
 
     if cli_args.weights_file is None:
-        cli_args.weights_file = 'weights.pt'
+        #cli_args.weights_file = 'weights.pt'
+
+        path = os.path.join(os.getcwd() + 'weights.pt')
+        print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!' + str(path))
+        cli_args.weights_file = path
 
     make_directories.main_for_directories() # make the directories for results, nn_mask, threshold, and area filtered
 

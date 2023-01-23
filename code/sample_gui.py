@@ -93,6 +93,7 @@ def open_file():
     folder_has_been_selected = 0
     global folder_selected_as_project_directory
     folder_selected_as_project_directory = filedialog.askdirectory() # folder selected should be the folder with the tif files
+    return_folder_selected_as_project_directory(folder_selected_as_project_directory)
     if folder_selected_as_project_directory is not None:
         folder_has_been_selected = 1
         # Change the working directory to the directory where the images are.
@@ -100,23 +101,31 @@ def open_file():
         entry_box_for_file_path.insert(tk.END, folder_selected_as_project_directory) # populate the entry box with the file path.
         get_tif_files()
 
+
+
+def return_folder_selected_as_project_directory(folder_selected_as_project_directory):
+    return folder_selected_as_project_directory
+
+
 # -------------------------------- Clear kickoff window ----------------------------
 def should_we_clear_window(): # destroy the kickoff window
     entry_box_for_file_path.destroy()
     folder_image_button.destroy()
     next_button.destroy()
     ask_to_select_main_directory_label.destroy()
-    global cleared
+    #global cleared
     cleared = 1
     #did_the_user_select_a_project_directory()
-    create_second_window()
+    return cleared
+    create_second_window(cleared)
+
 
 # -------------------------------- Create second window ----------------------------
-def create_second_window():
+def create_second_window(cleared):
     global list_of_second_window_widgets
     list_of_second_window_widgets = []
     if (cleared == 1): #if we just cleared the kickoff window, we create the second window.
-        global folder_selected_as_project_directory
+        return_folder_selected_as_project_directory() # get the folder
         config = PPConfig(folder_selected_as_project_directory)
         color = '#0C064A'
         window.configure(bg = color)
@@ -210,7 +219,7 @@ def create_second_window():
         button_frame.place(relx=0.5, rely=0.5, anchor=CENTER)
 
         # ------------------------------- Run Button---------------------
-        run_button = Button(button_frame, text ='Run', command = on_click)
+        run_button = Button(button_frame, text ='Run', command = on_click) # look into ways to pass the project dir at binding time. Project dir is param for process, in process, get list of images.
         run_button.place(relx=0.8, rely=0.5, anchor=CENTER)
         list_of_second_window_widgets.append(run_button)
         # --------------------- Back Button ---------------------
@@ -260,7 +269,7 @@ def make_directories_here():
         make_directories.make_mask_directories()
 
 def on_click(): # when click the RUN button
-    return_list_of_images()
+    return_list_of_images() #
     #update_GUI()
     run_process_images()
 
@@ -270,12 +279,13 @@ def on_click(): # when click the RUN button
 def run_process_images():
     # parent_of_images_directory = Path(os.getcwd()).resolve().parents[0] # should be photophenosizerkp
     # print(parent_of_images_directory)
-
-    global folder_selected_as_project_directory
-    parent_of_project_directory = Path(folder_selected_as_project_directory).resolve().parents[0] # should be photophenosizerkp
+    # find tif files here
+    return_folder_selected_as_project_directory() # get the folder
+    parent_of_project_directory = (folder_selected_as_project_directory).resolve().parents[0] # should be photophenosizerkp
     print(str(parent_of_project_directory))
     os.chdir(folder_selected_as_project_directory)
-    make_directories_here()
+
+    make_directories_here() # pass in folder_selected_as_project_directory
 
     #navigate to code directory? j
     #join(parent_of_project_directoryfolder_selected_as_project_directory)
@@ -300,12 +310,17 @@ def run_process_images():
     print('in sample_gui, the images dir:' + str(images_dir_path))
     os.chdir(images_dir_path)
     already_processed = []
+    index = 0
     #print(list_of_tif_files_in_directory)
     for image in list_of_tif_files_in_directory: #for each image in the Images directory:
         os.chdir(images_dir_path)
         already_processed.append(image) # add the image name to the list of already processed images
         update_scroll() # update the section with the scrollbar to display images names as they are processed
         process_images.process_image(image, args)
+        index = index + 1
+        if(index+1 == len(list_of_tif_files_in_directory)):
+            print("DONEEE")
+
 # *****************************************************************************************************************************************************************************************************
 
 
@@ -318,7 +333,7 @@ def update_scroll():
     color = '#0C064A'
     fontColor = '#FFFFFF'
     label_for_scroll_section = Label(window, text = 'Images processed: ', font = ('Arial', 15), bg = color, fg = fontColor)
-    label_for_scroll_section.place(relx=0.5, rely=0.8, anchor=CENTER)
+    label_for_scroll_section.place(relx=0.5, rely=0.76, anchor=CENTER)
 
     scroll_frame = Frame(window, bg = '#000000', borderwidth=1, relief="sunken")
     scroll_frame.place(relx=0.5, rely=0.9, anchor=CENTER) # scroll_frame defines the display location of text of the processed images with a scrollbar.
@@ -338,7 +353,7 @@ def update_scroll():
 
     Tk.update(window)
 
-def get_tif_files():
+def get_tif_files(): # parameter: folder_selected_as_project_directory. return list_of_tif_files_in_directory.
     global list_of_tif_files_in_directory
     #list_of_all_files_in_directory = []
     list_of_tif_files_in_directory = []
