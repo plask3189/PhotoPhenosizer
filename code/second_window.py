@@ -14,6 +14,7 @@ import process_images
 import pp_config
 from pp_config import PPConfig
 import configparser
+import PIL
 from PIL import ImageTk, Image
 from configparser import ConfigParser
 import make_directories
@@ -21,20 +22,21 @@ import tkinter.messagebox
 from pathlib import Path
 import kickoff_window
 global final_folder
+global list_of_configuration_entry_boxes
 from run_process_images import run_process_images
 
 
 def create_second_window(final_folder):
+    global list_of_configuration_entry_boxes
     print('we created second window.')
     window = kickoff_window.get_window()
-
+    # window = kickoff_window.kickoff_window()
     print('final fold in second window: ' + str(final_folder))
     folder_selected_as_project_directory = final_folder
     config = PPConfig(folder_selected_as_project_directory)
     color = '#0C064A'
     #window.configure(bg = color)
     fontColor = '#FFFFFF'
-
     list_of_configuration_entry_boxes = []
     #window.configure(bg = color)
     #fontColor = '#FFFFFF'  # font color is white
@@ -49,11 +51,25 @@ def create_second_window(final_folder):
     threshold_label = Label(frame_2, text = 'Threshold value: ', font = ('Arial', 15), bg = color, fg = fontColor)
     threshold_label.place(relx=0.4, rely=0.2, anchor=CENTER)
 
-    #----------------------- More info button for threshold ---------------------------
-    more_info_image = PhotoImage(file='more_info_icon.png')
-    more_info_label = Label(image = more_info_image)
-    more_info_label.image = more_info_image
-    more_info_button= Button(frame_2, image = more_info_image,command= threshold_info_popup, borderwidth=0, height= 18, width= 22)
+    #----------------------- More info button for threshold -------------------------
+    code_dir_path = kickoff_window.get_code_directory()
+    print('code dir:' + str(code_dir_path))
+    more_info_image = Image.open(code_dir_path + '/more_info_icon.png')
+    print('load:' + str(more_info_image))
+    more_info_image = ImageTk.PhotoImage(more_info_image)
+    print('render:' + str(more_info_image))
+    img = Label(frame_2, image=more_info_image)
+    more_info_image.image = more_info_image
+    #more_info_image.place(x=0, y=0)
+
+
+
+    #print('info image:' + str(info_image))
+    # more_info_image = Image(file= code_dir_path + '/more_info_icon.png')
+    # print(str(more_info_image))
+    # more_info_label = Label(image = more_info_image)
+    # more_info_label.image = more_info_image
+    more_info_button= Button(window, image = more_info_image,command= threshold_info_popup, borderwidth=0, height= 18, width= 22)
     more_info_button.place(relx=0.32, rely=0.2, anchor=CENTER)
 
     #----------------------- Checkbox ---------------------------
@@ -71,7 +87,7 @@ def create_second_window(final_folder):
     kernel_size_input_value = kernel_size_entry_box.get()
     list_of_configuration_entry_boxes.append(kernel_size_entry_box)
 
-    #----------------------- More info button for kernel size ---------------------------
+    #----------------------- More info button for kernel size -----------------------
     more_info_button_for_kernel_size= Button(frame_2, image = more_info_image,command= kernel_size_info_popup, borderwidth=0, height= 18, width= 22)
     more_info_button_for_kernel_size.place(relx=0.32, rely=0.3, anchor=CENTER)
 
@@ -90,9 +106,11 @@ def create_second_window(final_folder):
     #------------- To upload weights file------------------
     ask_to_select_weights_file_label = Label(frame_2, text = 'Select the weights file:', font = ('Arial', 15), bg = color, fg = fontColor)
     ask_to_select_weights_file_label.place(relx=0.1, rely=0.5, anchor=CENTER)
+
     entry_box_for_weights_path=tk.Entry(frame_2, width = 60, font=40)
     entry_box_for_weights_path.insert(END, os.path.join(folder_selected_as_project_directory, config.weights_file)) # automatically chose the weights.pt file that is in the main project directory
     entry_box_for_weights_path.place(relx=0.5, rely=0.5, anchor=CENTER)
+    list_of_configuration_entry_boxes.append(entry_box_for_weights_path)
     file_image_to_click = PhotoImage(file='weights_file_upload_image.png')
     file_image_label = Label(image = file_image_to_click)
     file_image_label.image = file_image_to_click
@@ -117,6 +135,7 @@ def create_second_window(final_folder):
     button_frame.place(relx=0.5, rely=0.5, anchor=CENTER)
 
     # ------------------------------- Run Button---------------------
+    print('final_folder at Run:'+  str(final_folder))
     run_button = Button(button_frame, text ='Run', command = lambda: on_run_click(final_folder)) # look into ways to pass the project dir at binding time. Project dir is param for process, in process, get list of images.
     run_button.place(relx=0.8, rely=0.5, anchor=CENTER)
 
@@ -124,26 +143,25 @@ def create_second_window(final_folder):
     back_button = Button(button_frame, text ='Back', command = back)
     back_button.place(relx=0.2, rely=0.5, anchor=CENTER)
 
-    # return_list_of_configuration_values(list_of_configuration_entry_boxes)
+    print('list of entry boxes: ' + str(list_of_configuration_entry_boxes))
+    return_list_of_configuration_boxes()
     return window
 
-# def return_list_of_configuration_values(list_of_configuration_entry_boxes):
-#     return list_of_configuration_entry_boxes
+def return_list_of_configuration_boxes():
+    print('return_list_of_configuration_values works: '+ str(list_of_configuration_entry_boxes))
+    return list_of_configuration_entry_boxes
 
 
 
 def threshold_info_popup():
-    print('threshold')
     popup_title = "More info on threshold"
     tkinter.messagebox.showinfo(popup_title,  "I am telling you about what threshold configuration does.")
 def kernel_size_info_popup():
     # populate popup box with kernel_size info
-    print('hi')
     popup_title = "More info on kernel size"
     tkinter.messagebox.showinfo(popup_title,  "I am telling you about what kernel size configuration does.")
 def min_size_info_popup():
     # populate popup box with min_size info
-    print('hi')
     popup_title = "More info on min size"
     tkinter.messagebox.showinfo(popup_title,  "I am telling you about what min size configuration does.")
 
@@ -162,8 +180,10 @@ def make_directories_here():
         make_directories.make_mask_directories()
 
 def main(): # main listens for events to happen
+
     window = create_second_window()
     window.mainloop()
 
 if __name__ == "__main__":
+
     main()

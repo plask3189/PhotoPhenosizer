@@ -35,9 +35,7 @@ def weave_it_all_together():
     #final_folder = return_final_folder(final_folder)
     print('final fold: ' + str(final_folder))
     is_kickoff_window_cleared = kickoff_window.get_cleared_value(1) # get the cleared value from the kickoff window to check if all of the widgets have been removed in order to clear the window for the second window.
-    # if(is_kickoff_window_cleared == 1): # if cleared_value is true, construct the second window.
-    #     window = kickoff_window.get_window()
-    #     second_window.create_second_window(final_folder)
+
 
     return 'hi'
 

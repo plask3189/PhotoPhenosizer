@@ -26,11 +26,13 @@ import kickoff_window
 import second_window
 
 def run_process_images(final_folder):
-    # parent_of_images_directory = Path(os.getcwd()).resolve().parents[0] # should be photophenosizerkp
-    # print(parent_of_images_directory)
+    entry_boxes = second_window.return_list_of_configuration_boxes()
+
+    #print('list of config entry boxes: ' + str(entry_boxes))
+    #list of config entry boxes: [<tkinter.Entry object .!entry>, <tkinter.Entry object .!frame2.!entry>, <tkinter.Entry object .!frame2.!entry2>, <tkinter.Entry object .!frame2.!entry3>]
     # find tif files here
     folder_selected_as_project_directory = final_folder
-    print('in run process images, final fold: ' + str(final_folder))
+    #print('in run process images, final fold: ' + str(final_folder))
     #parent_of_project_directory = (folder_selected_as_project_directory).resolve().parents[0] # should be photophenosizerkp
     #print(str(parent_of_project_directory))
     #os.chdir(folder_selected_as_project_directory)
@@ -39,22 +41,27 @@ def run_process_images(final_folder):
     tif_files = kickoff_window.get_tif_files(final_folder)
     print('tif files here:' + str(tif_files))
 
-    entry_boxes = return_list_of_configuration_values(list_of_configuration_entry_boxes)
-    print('entry boxes: ' + str(entry_boxes))
+    list_of_config_boxes = second_window.return_list_of_configuration_boxes()
+    thresh_box = list_of_config_boxes[0]
+    print('threshbox val:' + str(thresh_box))
+    kern_box = list_of_config_boxes[1]
+    min_box = list_of_config_boxes[2]
+    weights_box = list_of_config_boxes[3]
+
 
     configuration = PPConfig(folder_selected_as_project_directory)
-    configuration.threshold = int(threshold_entry_box.get())
-    configuration.kernel_size = int(kernel_size_entry_box.get())
-    configuration.min_size = int(min_size_entry_box.get())
+    configuration.threshold = int(thresh_box.get())
+    configuration.kernel_size = int(kern_box.get())
+    configuration.min_size = int(min_box.get())
     configuration.write_config()
     #make_directories_here()
     global args
     args = {
         "results_directory": make_directories.get_results_directory(),
-        "weights_file": entry_box_for_weights_path.get(),
-        "write_nn_mask": kernel_size_entry_box.get(),
-        "write_threshold_mask": threshold_entry_box.get(),
-        "write_area_filtered" : min_size_entry_box.get(),
+        "weights_file": weights_box.get(),
+        "write_nn_mask": kern_box.get(),
+        "write_threshold_mask": thresh_box.get(),
+        "write_area_filtered" : min_box.get(),
         "config": configuration
     }
     global already_processed
@@ -64,6 +71,7 @@ def run_process_images(final_folder):
     already_processed = []
     index = 0
     #print(list_of_tif_files_in_directory)
+    list_of_tif_files_in_directory = kickoff_window.get_tif_files(final_folder)
     for image in list_of_tif_files_in_directory: #for each image in the Images directory:
         os.chdir(images_dir_path)
         already_processed.append(image) # add the image name to the list of already processed images
