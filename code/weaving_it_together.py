@@ -25,27 +25,33 @@ from pathlib import Path
 import kickoff_window
 
 import second_window
-
+#window = tk.Tk()
 
 def weave_it_all_together():
     import kickoff_window
-
+    #get_code_directory()
     kickoff_window.main() # Display the kickoff window
-    final_folder = kickoff_window.uggg_return()
+    final_folder = kickoff_window.uggg_return() # get the final folder value from kickoff window file
+    #clear_kickoff_window()
     #final_folder = return_final_folder(final_folder)
     print('final fold: ' + str(final_folder))
-    is_kickoff_window_cleared = kickoff_window.get_cleared_value(1) # get the cleared value from the kickoff window to check if all of the widgets have been removed in order to clear the window for the second window.
 
-
-    return 'hi'
-
-
+    #lambda: second_window.create_second_window()
+    return kickoff_window
 
 
 
-# def main(): # main listens for events to happen
-#     weave = weave_it_all_together()
-#     weave.mainloop()
+
+
+
+# def get_code_directory():
+#     code_dir = os.getcwd()
+#     return code_dir
+
+
+def main(): # main listens for events to happen
+    weave = weave_it_all_together()
+    weave.mainloop()
 
 if __name__ == "__main__":
     weave = weave_it_all_together()

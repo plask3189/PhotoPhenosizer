@@ -21,27 +21,22 @@ import make_directories
 import tkinter.messagebox
 from pathlib import Path
 import kickoff_window
-global final_folder
-global list_of_configuration_entry_boxes
+global folder_selected_as_project_directory
+
 from run_process_images import run_process_images
 
 
-def create_second_window(final_folder):
-    global list_of_configuration_entry_boxes
-    print('we created second window.')
-    window = kickoff_window.get_window()
-    # window = kickoff_window.kickoff_window()
-    print('final fold in second window: ' + str(final_folder))
-    folder_selected_as_project_directory = final_folder
+def create_second_window(folder_selected_as_project_directory, window, tif_file_names_in_images_directory, res_dir):
+    import kickoff_window
+
     config = PPConfig(folder_selected_as_project_directory)
     color = '#0C064A'
     #window.configure(bg = color)
     fontColor = '#FFFFFF'
+    global list_of_configuration_entry_boxes
     list_of_configuration_entry_boxes = []
-    #window.configure(bg = color)
-    #fontColor = '#FFFFFF'  # font color is white
 
-    frame_2 = Frame(window, bg = color, width = 999, height = 699)
+    frame_2 = Frame(window, bg = color, width=999, height=699)
     #button_frame_frame.pack()
     frame_2.place(relx=0.5, rely=0.5, anchor=CENTER)
     introTextLine1 = Label(frame_2, text = 'Welcome to Photo Phenosizer', font = ('Arial', 50), bg = color, fg = fontColor)
@@ -52,7 +47,7 @@ def create_second_window(final_folder):
     threshold_label.place(relx=0.4, rely=0.2, anchor=CENTER)
 
     #----------------------- More info button for threshold -------------------------
-    code_dir_path = kickoff_window.get_code_directory()
+    code_dir_path = os.getcwd()
     print('code dir:' + str(code_dir_path))
     more_info_image = Image.open(code_dir_path + '/more_info_icon.png')
     print('load:' + str(more_info_image))
@@ -60,20 +55,12 @@ def create_second_window(final_folder):
     print('render:' + str(more_info_image))
     img = Label(frame_2, image=more_info_image)
     more_info_image.image = more_info_image
-    #more_info_image.place(x=0, y=0)
 
-
-
-    #print('info image:' + str(info_image))
-    # more_info_image = Image(file= code_dir_path + '/more_info_icon.png')
-    # print(str(more_info_image))
-    # more_info_label = Label(image = more_info_image)
-    # more_info_label.image = more_info_image
-    more_info_button= Button(window, image = more_info_image,command= threshold_info_popup, borderwidth=0, height= 18, width= 22)
+    more_info_button= Button(window, image = more_info_image, command=lambda: info_popup('threshold'), borderwidth=0, height= 18, width= 22)
     more_info_button.place(relx=0.32, rely=0.2, anchor=CENTER)
 
     #----------------------- Checkbox ---------------------------
-    threshold_entry_box = tk.Entry(window, bd =5)
+    threshold_entry_box = tk.Entry(frame_2, bd =5)
     threshold_entry_box.insert(END, str(config.threshold))
     threshold_entry_box.place(relx=0.6, rely=0.2, anchor=CENTER)
     list_of_configuration_entry_boxes.append(threshold_entry_box)
@@ -88,7 +75,7 @@ def create_second_window(final_folder):
     list_of_configuration_entry_boxes.append(kernel_size_entry_box)
 
     #----------------------- More info button for kernel size -----------------------
-    more_info_button_for_kernel_size= Button(frame_2, image = more_info_image,command= kernel_size_info_popup, borderwidth=0, height= 18, width= 22)
+    more_info_button_for_kernel_size= Button(frame_2, image = more_info_image,command= lambda: info_popup('kernel_size'), borderwidth=0, height= 18, width= 22)
     more_info_button_for_kernel_size.place(relx=0.32, rely=0.3, anchor=CENTER)
 
     #--------------- Label and text entry box for min size ------------
@@ -100,7 +87,7 @@ def create_second_window(final_folder):
     list_of_configuration_entry_boxes.append(min_size_entry_box)
 
     #----------------------- More info button for min size ---------------------------
-    more_info_button_for_min_size= Button(frame_2, image = more_info_image,command= min_size_info_popup, borderwidth=0, height= 18, width= 22)
+    more_info_button_for_min_size= Button(frame_2, image = more_info_image,command = lambda: info_popup('min_size'), borderwidth=0, height= 18, width= 22)
     more_info_button_for_min_size.place(relx=0.32, rely=0.4, anchor=CENTER)
 
     #------------- To upload weights file------------------
@@ -118,9 +105,8 @@ def create_second_window(final_folder):
     file_image_button.place(relx=0.758, rely=0.5, anchor=CENTER)
 
     #----------------------- Checkbox ----------------------------------
-
     var1 = tk.IntVar()
-    checkbox = tk.Checkbutton(frame_2, text='Check here if you would like to save area filtered, NN, and threshold mask images',variable=var1, onvalue=1, offvalue=0, command=make_directories_here)
+    checkbox = tk.Checkbutton(frame_2, text='Check here if you would like to save area filtered, NN, and threshold mask images',variable=var1, onvalue=1, offvalue=0, command= lambda: make_directories_here(res_dir, var1))
     checkbox.select() #automatically checks this button
     checkbox.place(relx=0.5, rely=0.6, anchor=CENTER)
 
@@ -135,38 +121,35 @@ def create_second_window(final_folder):
     button_frame.place(relx=0.5, rely=0.5, anchor=CENTER)
 
     # ------------------------------- Run Button---------------------
-    print('final_folder at Run:'+  str(final_folder))
-    run_button = Button(button_frame, text ='Run', command = lambda: on_run_click(final_folder)) # look into ways to pass the project dir at binding time. Project dir is param for process, in process, get list of images.
+    print('folder_selected_as_project_directory at Run:'+  str(folder_selected_as_project_directory))
+    run_button = Button(button_frame, text ='Run', command = lambda: run_process_images(folder_selected_as_project_directory, tif_file_names_in_images_directory, window, res_dir)) # look into ways to pass the project dir at binding time. Project dir is param for process, in process, get list of images.
     run_button.place(relx=0.8, rely=0.5, anchor=CENTER)
 
     # --------------------- Back Button ---------------------
     back_button = Button(button_frame, text ='Back', command = back)
     back_button.place(relx=0.2, rely=0.5, anchor=CENTER)
 
-    print('list of entry boxes: ' + str(list_of_configuration_entry_boxes))
+    #print('list of entry boxes: ' + str(list_of_configuration_entry_boxes))
     return_list_of_configuration_boxes()
     return window
 
 def return_list_of_configuration_boxes():
-    print('return_list_of_configuration_values works: '+ str(list_of_configuration_entry_boxes))
+    #print('return_list_of_configuration_values works: '+ str(list_of_configuration_entry_boxes))
     return list_of_configuration_entry_boxes
 
 
 
-def threshold_info_popup():
-    popup_title = "More info on threshold"
-    tkinter.messagebox.showinfo(popup_title,  "I am telling you about what threshold configuration does.")
-def kernel_size_info_popup():
-    # populate popup box with kernel_size info
-    popup_title = "More info on kernel size"
-    tkinter.messagebox.showinfo(popup_title,  "I am telling you about what kernel size configuration does.")
-def min_size_info_popup():
-    # populate popup box with min_size info
-    popup_title = "More info on min size"
-    tkinter.messagebox.showinfo(popup_title,  "I am telling you about what min size configuration does.")
+def info_popup(threshold_or_kernel_size_or_min_size):
+    if (threshold_or_kernel_size_or_min_size == 'threshold'):
+        popup_title = "More info on threshold"
+        tkinter.messagebox.showinfo(popup_title,  "The threshold value can be 0-255. The higher the threshold, the higher the Neural Network's confidence for more pixels.")
+    if (threshold_or_kernel_size_or_min_size == 'kernel_size'):
+        popup_title = "More info on kernel size"
+        tkinter.messagebox.showinfo(popup_title,  "The kernel size value can be 2-500. Kernel size the the number of neighboring pixels around a cell to consider for erotion and dilation. Erosion and dilation processes disconnect adjacent cells, remove small artifacts, and fill in holes.")
+    if (threshold_or_kernel_size_or_min_size == 'min_size'):
+        popup_title = "More info on min size"
+        tkinter.messagebox.showinfo(popup_title,  "The min size can be 1-1000. This is the minimum Feret diameter. ")
 
-def on_run_click(final_folder):
-    run_process_images(final_folder)
 
 def back():
     return 'back'
@@ -174,10 +157,10 @@ def back():
 def open_weights_file():
      weights_file_selected = filedialog.askopenfile() # ask what weights file to use.
 
-def make_directories_here():
-    make_directories.make_results_directory()
+def make_directories_here(res_dir, var1):
+    #make_directories.make_results_directory()
     if(var1.get() == 1): # if the user checks the box saying that they want to save the configuration images, make the directories to save those images
-        make_directories.make_mask_directories()
+        make_directories.make_mask_directories(res_dir)
 
 def main(): # main listens for events to happen
 

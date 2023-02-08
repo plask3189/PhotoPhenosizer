@@ -18,28 +18,15 @@ from PIL import ImageTk, Image
 from configparser import ConfigParser
 import make_directories
 import tkinter.messagebox
-
+import variable_support
 
 from pathlib import Path
 
 import kickoff_window
 import second_window
 
-def run_process_images(final_folder):
+def run_process_images(folder_selected_as_project_directory, tif_file_names_in_images_directory, window, res_dir):
     entry_boxes = second_window.return_list_of_configuration_boxes()
-
-    #print('list of config entry boxes: ' + str(entry_boxes))
-    #list of config entry boxes: [<tkinter.Entry object .!entry>, <tkinter.Entry object .!frame2.!entry>, <tkinter.Entry object .!frame2.!entry2>, <tkinter.Entry object .!frame2.!entry3>]
-    # find tif files here
-    folder_selected_as_project_directory = final_folder
-    #print('in run process images, final fold: ' + str(final_folder))
-    #parent_of_project_directory = (folder_selected_as_project_directory).resolve().parents[0] # should be photophenosizerkp
-    #print(str(parent_of_project_directory))
-    #os.chdir(folder_selected_as_project_directory)
-
-    #make_directories_here() # pass in folder_selected_as_project_directory
-    tif_files = kickoff_window.get_tif_files(final_folder)
-    print('tif files here:' + str(tif_files))
 
     list_of_config_boxes = second_window.return_list_of_configuration_boxes()
     thresh_box = list_of_config_boxes[0]
@@ -48,16 +35,15 @@ def run_process_images(final_folder):
     min_box = list_of_config_boxes[2]
     weights_box = list_of_config_boxes[3]
 
-
     configuration = PPConfig(folder_selected_as_project_directory)
     configuration.threshold = int(thresh_box.get())
     configuration.kernel_size = int(kern_box.get())
     configuration.min_size = int(min_box.get())
     configuration.write_config()
-    #make_directories_here()
+
     global args
     args = {
-        "results_directory": make_directories.get_results_directory(),
+        "results_directory": res_dir,
         "weights_file": weights_box.get(),
         "write_nn_mask": kern_box.get(),
         "write_threshold_mask": thresh_box.get(),
@@ -70,22 +56,19 @@ def run_process_images(final_folder):
     os.chdir(images_dir_path)
     already_processed = []
     index = 0
-    #print(list_of_tif_files_in_directory)
-    list_of_tif_files_in_directory = kickoff_window.get_tif_files(final_folder)
-    for image in list_of_tif_files_in_directory: #for each image in the Images directory:
+
+    for image in tif_file_names_in_images_directory: #for each image in the Images directory:
         os.chdir(images_dir_path)
         already_processed.append(image) # add the image name to the list of already processed images
-        update_scroll() # update the section with the scrollbar to display images names as they are processed
+        update_scroll(window) # update the section with the scrollbar to display images names as they are processed
         process_images.process_image(image, args)
         index = index + 1
-        if(index+1 == len(list_of_tif_files_in_directory)):
+        if(index+1 == len(tif_file_names_in_images_directory)):
             print("DONEEE")
 
-# *****************************************************************************************************************************************************************************************************
+# ********************************************************************************
+def update_scroll(window):
 
-
-def update_scroll():
-    window = kickoff_window.get_window()
     color = '#0C064A'
     fontColor = '#FFFFFF'
     label_for_scroll_section = Label(window, text = 'Images processed: ', font = ('Arial', 15), bg = color, fg = fontColor)
