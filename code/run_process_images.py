@@ -27,10 +27,8 @@ import second_window
 
 def run_process_images(folder_selected_as_project_directory, tif_file_names_in_images_directory, window, res_dir):
     entry_boxes = second_window.return_list_of_configuration_boxes()
-
     list_of_config_boxes = second_window.return_list_of_configuration_boxes()
     thresh_box = list_of_config_boxes[0]
-    print('threshbox val:' + str(thresh_box))
     kern_box = list_of_config_boxes[1]
     min_box = list_of_config_boxes[2]
     weights_box = list_of_config_boxes[3]
@@ -50,24 +48,23 @@ def run_process_images(folder_selected_as_project_directory, tif_file_names_in_i
         "write_area_filtered" : min_box.get(),
         "config": configuration
     }
-    global already_processed
+    #global already_processed
     images_dir_path = os.path.join(folder_selected_as_project_directory, 'Images')
-    print('in sample_gui, the images dir:' + str(images_dir_path))
-    os.chdir(images_dir_path)
+
     already_processed = []
     index = 0
 
     for image in tif_file_names_in_images_directory: #for each image in the Images directory:
         os.chdir(images_dir_path)
         already_processed.append(image) # add the image name to the list of already processed images
-        update_scroll(window) # update the section with the scrollbar to display images names as they are processed
+        update_scroll(window, already_processed) # update the section with the scrollbar to display images names as they are processed
         process_images.process_image(image, args)
         index = index + 1
-        if(index+1 == len(tif_file_names_in_images_directory)):
+        if(index+1 == (len(tif_file_names_in_images_directory)+1)):
             print("DONEEE")
 
 # ********************************************************************************
-def update_scroll(window):
+def update_scroll(window, already_processed):
 
     color = '#0C064A'
     fontColor = '#FFFFFF'

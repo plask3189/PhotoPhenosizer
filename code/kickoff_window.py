@@ -27,10 +27,7 @@ import variable_support
 
 def kickoff_window():
     global window
-
     window = tk.Tk()
-
-    cwd = os.getcwd()
     window.title('Photo Phenosizer')
     window_width = 1000
     window_height = 700
@@ -58,8 +55,9 @@ def kickoff_window():
     global folder_image_button
     folder_image_button= tk.Button(frame_1, image = folder_image_to_click,command= lambda: open_file(entry_box_for_file_path), borderwidth=0, height= 20, width= 20)
     folder_image_button.place(relx=0.76, rely=0.3, anchor=CENTER)
-    cwd = os.getcwd() # make .config file in the user's home directory.
-    config_for_proj_dir = ProjectDirectoryConfig(cwd)
+
+    the_code_directory = os.path.dirname(os.path.abspath('kickoff_window.py')) # get the code directory, which is the same directory where this file is located! That way, we do not need to use 'getcwd(),' which we are trying to avoid.
+    config_for_proj_dir = ProjectDirectoryConfig(the_code_directory)
     entry_box_for_file_path.insert(END, str(config_for_proj_dir.project_dir))
     folder_selected_as_project_directory = entry_box_for_file_path.get()
 
@@ -73,15 +71,15 @@ def open_file(entry_box_for_file_path):
     entry_box_for_file_path.delete(0, END) # Delete the text that was in the entry box for project directory submission.
     folder_selected_as_project_directory = filedialog.askdirectory() # Ask the user to select a project directory. The selected one is assigned to folder_selected_as_project_directory
     entry_box_for_file_path.insert(tk.END, folder_selected_as_project_directory) # populate the entry box with the file path.
-    cwd = os.getcwd()
-    configuration = ProjectDirectoryConfig(cwd)  
+    the_code_directory = os.path.dirname(os.path.abspath('kickoff_window.py')) # get the code directory, which is the same directory where this file is located! That way, we do not need to use 'getcwd(),' which we are trying to avoid.
+    configuration = ProjectDirectoryConfig(the_code_directory)
     configuration.project_dir = str(entry_box_for_file_path.get())
     configuration.write_config()
     return folder_selected_as_project_directory
 
 
 def get_tif_files(folder_selected_as_project_directory, frame_1):
-    res_dir = make_directories.make_results_directory(folder_selected_as_project_directory) # we create the results directory, then pass it through as a series
+    res_dir = make_directories.make_results_directory(folder_selected_as_project_directory) # we create the results directory
     images_dir_name = os.path.join(folder_selected_as_project_directory, 'Images') # Navigate to the images directory
     if(os.path.isdir(images_dir_name)):
         list_of_all_files_in_directory = os.listdir(images_dir_name) # get a list of all names in the Images directory.

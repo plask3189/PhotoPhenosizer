@@ -47,12 +47,9 @@ def create_second_window(folder_selected_as_project_directory, window, tif_file_
     threshold_label.place(relx=0.4, rely=0.2, anchor=CENTER)
 
     #----------------------- More info button for threshold -------------------------
-    code_dir_path = os.getcwd()
-    print('code dir:' + str(code_dir_path))
-    more_info_image = Image.open(code_dir_path + '/more_info_icon.png')
-    print('load:' + str(more_info_image))
+    the_code_directory = os.path.dirname(os.path.abspath('second_window.py')) # get the code directory, which is the same directory where this file is located! That way, we do not need to use 'getcwd(),' which we are trying to avoid.
+    more_info_image = Image.open(the_code_directory + '/more_info_icon.png')
     more_info_image = ImageTk.PhotoImage(more_info_image)
-    print('render:' + str(more_info_image))
     img = Label(frame_2, image=more_info_image)
     more_info_image.image = more_info_image
 
@@ -71,7 +68,6 @@ def create_second_window(folder_selected_as_project_directory, window, tif_file_
     kernel_size_entry_box = tk.Entry(frame_2, bd =5)
     kernel_size_entry_box.insert(END, str(config.kernel_size))
     kernel_size_entry_box.place(relx=0.6, rely=0.3, anchor=CENTER)
-    kernel_size_input_value = kernel_size_entry_box.get()
     list_of_configuration_entry_boxes.append(kernel_size_entry_box)
 
     #----------------------- More info button for kernel size -----------------------
@@ -105,9 +101,8 @@ def create_second_window(folder_selected_as_project_directory, window, tif_file_
     file_image_button.place(relx=0.758, rely=0.5, anchor=CENTER)
 
     #----------------------- Checkbox ----------------------------------
-    var1 = tk.IntVar()
-    checkbox = tk.Checkbutton(frame_2, text='Check here if you would like to save area filtered, NN, and threshold mask images',variable=var1, onvalue=1, offvalue=0, command= lambda: make_directories_here(res_dir, var1))
-    checkbox.select() #automatically checks this button
+    checked_or_unchecked = tk.IntVar()
+    checkbox = tk.Checkbutton(frame_2, text='Check here if you would like to save area filtered, NN, and threshold mask images',variable=checked_or_unchecked, onvalue=1, offvalue=0, command= lambda: make_mask_directories_here(res_dir, checked_or_unchecked))
     checkbox.place(relx=0.5, rely=0.6, anchor=CENTER)
 
     #------------------------------- Button Frame---------------------
@@ -121,7 +116,7 @@ def create_second_window(folder_selected_as_project_directory, window, tif_file_
     button_frame.place(relx=0.5, rely=0.5, anchor=CENTER)
 
     # ------------------------------- Run Button---------------------
-    print('folder_selected_as_project_directory at Run:'+  str(folder_selected_as_project_directory))
+    #the_code_directory = os.path.dirname(os.path.abspath('second_window.py'))
     run_button = Button(button_frame, text ='Run', command = lambda: run_process_images(folder_selected_as_project_directory, tif_file_names_in_images_directory, window, res_dir)) # look into ways to pass the project dir at binding time. Project dir is param for process, in process, get list of images.
     run_button.place(relx=0.8, rely=0.5, anchor=CENTER)
 
@@ -129,15 +124,36 @@ def create_second_window(folder_selected_as_project_directory, window, tif_file_
     back_button = Button(button_frame, text ='Back', command = back)
     back_button.place(relx=0.2, rely=0.5, anchor=CENTER)
 
-    #print('list of entry boxes: ' + str(list_of_configuration_entry_boxes))
-    return_list_of_configuration_boxes()
+    # thresh_val = threshold_entry_box.get()
+    # kernel_val = kernel_size_entry_box.get()
+    # min_val = min_size_entry_box.get()
+
+    # update_configs(thresh_val, kernel_val, min_val, folder_selected_as_project_directory, res_dir)
     return window
 
 def return_list_of_configuration_boxes():
-    #print('return_list_of_configuration_values works: '+ str(list_of_configuration_entry_boxes))
     return list_of_configuration_entry_boxes
 
-
+# def update_configs(thresh_val, kernel_val, min_val, folder_selected_as_project_directory, res_dir):
+#
+#     print('threshbox: ' + thresh_val)
+#
+#
+#     configuration = PPConfig(folder_selected_as_project_directory)
+#     configuration.threshold = int(thresh_val)
+#     configuration.kernel_size = int(kernel_val)
+#     configuration.min_size = int(min_val)
+#     configuration.write_config()
+#
+#     #global args
+#     args = {
+#         "results_directory": res_dir,
+#         "weights_file": weights_box,
+#         "write_nn_mask": kern_box,
+#         "write_threshold_mask": thresh_box,
+#         "write_area_filtered" : min_box,
+#         "config": configuration
+#     }
 
 def info_popup(threshold_or_kernel_size_or_min_size):
     if (threshold_or_kernel_size_or_min_size == 'threshold'):
@@ -150,23 +166,19 @@ def info_popup(threshold_or_kernel_size_or_min_size):
         popup_title = "More info on min size"
         tkinter.messagebox.showinfo(popup_title,  "The min size can be 1-1000. This is the minimum Feret diameter. ")
 
-
 def back():
     return 'back'
 
 def open_weights_file():
      weights_file_selected = filedialog.askopenfile() # ask what weights file to use.
 
-def make_directories_here(res_dir, var1):
-    #make_directories.make_results_directory()
-    if(var1.get() == 1): # if the user checks the box saying that they want to save the configuration images, make the directories to save those images
+def make_mask_directories_here(res_dir, checked_or_unchecked):
+    if(checked_or_unchecked.get() == 1): # if the user checks the box saying that they want to save the configuration images, make the directories to save those images
         make_directories.make_mask_directories(res_dir)
 
 def main(): # main listens for events to happen
-
     window = create_second_window()
     window.mainloop()
 
 if __name__ == "__main__":
-
     main()

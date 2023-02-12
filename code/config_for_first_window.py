@@ -4,19 +4,16 @@ import os
 from pathlib import Path
 
 class ProjectDirectoryConfig:
-    def __init__(self, project_directory): # parameter is project_directory to be able to get process_images.py and load configs
+    def __init__(self, project_directory): # parameter is project_directory to be able to get process_images.py and load config
         # ------------------ instance variables -----------------
         self.filename = os.path.join(project_directory, 'project_directory_config.ini') # create a project_directory_config.ini
         self.config_parser = ConfigParser()
-        cwd = os.getcwd()
         self.project_dir = ''
 
         if os.path.isfile(self.filename): # if there is already a 'project_directory_config.ini' file, we read the values from the parser and overwrite the defaults
 
             self.config_parser.read(self.filename) # read config.ini
             sections = self.config_parser.sections() # get the sections of config.ini
-
-            #print(sections) prints: ['IMAGEPROCESSING', 'NN']
 
             if 'PROJECTDIR' in sections:
                 if 'project_dir' in self.config_parser['PROJECTDIR']:

@@ -17,13 +17,12 @@ import feret
 from datetime import datetime
 from pp_config import PPConfig
 import make_directories
+import kickoff_window
 
 
 
 config_object = ConfigParser()
 config_object.read("config.ini") # Read the config.ini file that is generated from pp_config.py
-
-
 
 def write_image(original_filename, string_label, image, results_directory):
     """
@@ -43,38 +42,37 @@ def write_image(original_filename, string_label, image, results_directory):
     new_filename = original_path.with_stem(new_stem) # print(new_filename)   output: 522_1_1-nn_mask.tif
 
     #----------- Add the mask images to their respective directories -------------
-
     os.chdir(results_directory) # The current working directory is the project directory, so we need to change it to the results directory which is where the images and other subdirectories will be placed.
 
-    if string_label == '-nn_mask': # Check if the image to be created ends with 'nn-mask'
-        new_path2 = os.path.join(os.getcwd(), 'nn_masks')
-        if(os.path.exists(new_path2)): # chek to see that there is an 'nn_masks' directory in the results folder. This folder would have been made if the checkbox was checked in the gui.
-            os.chdir('nn_masks') # Change the working directory to 'nn_masks'
-            new_path = os.path.join(results_directory, 'nn_masks', str(new_filename))
 
+    if string_label == '-nn_mask': # Check if the image to be created ends with 'nn-mask'
+        #cwd = os.getcwd()
+        new_path2 = os.path.join(results_directory, 'nn_masks')
+        if(os.path.exists(new_path2)): # check to see that there is an 'nn_masks' directory in the results folder. This folder would have been made if the checkbox was checked in the gui.
+            os.chdir('nn_masks') # Change the working directory to 'nn_masks'
+            #new_path = os.path.join(results_directory, 'nn_masks', str(new_filename))
             cv2.imwrite(str(new_filename), image) # saves the image to the filepath called new_filename to the current working directory
-            os.chdir('../') # move back up to the parent directory (aka the results directory)
+            os.chdir(results_directory) # move back up to the parent directory (aka the results directory)
 
     if string_label == '-area_filtered': # Check if the image created ends with '-area_filtered'
         new_path2 = os.path.join(os.getcwd(), 'area_filtered_masks')
         if(os.path.exists(new_path2)): # chek to see that there is an 'nn_masks' directory in the
             os.chdir('area_filtered_masks') # Change the working directory to 'area_filtered_masks'
-            new_path = os.path.join(results_directory, 'area_filtered', str(new_filename))
+            #new_path = os.path.join(results_directory, 'area_filtered', str(new_filename))
             cv2.imwrite(str(new_filename), image) # saves the image to the filepath called new_filename to the current working directory
-            os.chdir('../') # move back up to the parent directory (aka the results directory)
+            os.chdir(results_directory) # move back up to the parent directory (aka the results directory)
 
     if string_label == '-threshold': # Check if the image created ends with '-threshold'
         new_path2 = os.path.join(os.getcwd(), 'threshold_masks')
         if(os.path.exists(new_path2)): # chek to see that there is an 'nn_masks' directory in the
             os.chdir('threshold_masks') # Change the working directory to 'threshold_masks'
-            new_path = os.path.join(results_directory, 'threshold', str(new_filename))
+            #new_path = os.path.join(results_directory, 'threshold', str(new_filename))
             cv2.imwrite(str(new_filename), image) # saves the image to the filepath called new_filename to the current working directory
-            os.chdir('../') # move back up to the parent directory (aka the results directory)
+            os.chdir(results_directory) # move back up to the parent directory (aka the results directory)
 
-    os.chdir('../') # move back to the project directory
-    # os.chdir('../')# move back to the photophenosizerkp directory
-    # code_directory = os.path.join(os.getcwd(), 'code')
-    # os.chdir(code_directory)
+            #os.chdir('../') # move back to the project directory
+
+
 
 
 def process_image(image_filename, args):
@@ -90,51 +88,23 @@ def process_image(image_filename, args):
      args is a dictionary that is defined either in main or from the sample_gui.
 
     """
-    cwd = os.getcwd()
-    print('cwd on line 94: ' + str(os.getcwd()))
-    parent_of_images_directory = Path(os.getcwd()).resolve().parents[0]
-    print('path to proj dir: ' + str(parent_of_images_directory)) # path to proj dir: /Users/kateplas/Documents/GitHub/PhotoPhenosizerKP/project_dir_2
-    images_directory_name = os.path.join(str(parent_of_images_directory) + '/Images')
-    print('at start of process_image(), the cwd is: ' + str(os.getcwd()))
-    print("******* images directory: " + str(images_directory_name))
-    # want = os.path.join(parent_of_images_directory + )
-    # dir = Path(os.getcwd() + '/Images')
-    # print('*****************dir is:' + str(dir))
-    # if dir != os.getcwd():
-        # os.chdir(dir)
-    #     os.chdir(images_directory_name)
-    # else we are already in it.
-
-
 
     input_img = Image.open(image_filename).convert("RGB")
-    # current_directory is images directory here
 
-    os.chdir(parent_of_images_directory)
-
-    parent_of_project_directory = Path(os.getcwd()).resolve().parents[0]
-    print('photophenosizerkp dir:' + str(parent_of_project_directory)) #photophenosizerkp dir:/Users/kateplas/Documents/GitHub/PhotoPhenosizerKP
-    os.chdir(parent_of_project_directory)
-    path_to_code_directory = os.path.join(parent_of_project_directory, 'code')
-    print('code dir: ' + str(path_to_code_directory)) #code dir: /Users/kateplas/Documents/GitHub/PhotoPhenosizerKP/code
-    cwd = os.getcwd()
-    images_dir = os.path.join(parent_of_images_directory, 'Images')
-    print('ahhh line 93')
-    print(str(os.getcwd()))
-    os.chdir(parent_of_images_directory) # this is the project directory
-    print('cwd is: ' + str(parent_of_images_directory))
-
-
-    os.chdir(path_to_code_directory)
-    print('cwd on line 112 is' + str(os.getcwd()))
+    the_code_directory = os.path.dirname(os.path.abspath('process_images.py'))
+    os.chdir(the_code_directory)
     nn_mask = nn_predict(input_img, args['weights_file'])
-    print('line 114 ' + args['weights_file'])
-    os.chdir(parent_of_images_directory)
+
+    images_directory_name = os.path.dirname(os.path.abspath(image_filename))
+    project_dir = os.path.dirname(os.path.abspath(images_directory_name))
+
+    os.chdir(project_dir) # need to go to the project dir to get config.ini
     threshold_mask = threshold(nn_mask, args["config"].threshold)
     threshold_mask = erod_dilate(threshold_mask, args["config"].kernel_size)
     area_filtered = area_filter(threshold_mask, args["config"].min_size)
 
     results_directory = args['results_directory']
+
     write_dimensions(area_filtered, image_filename, results_directory)
     if args['write_nn_mask']: # With the key, get the dictionary value
         write_image(image_filename, '-nn_mask', nn_mask, results_directory)
@@ -153,7 +123,7 @@ def nn_predict(input_img, weights_filename):
     specify another weights file to be used, then use it
     :return: an approximation of a mask indicating where the cells are
     """
-    print('weights file name: ' + weights_filename)
+
     model = torch.load(weights_filename)
     model.eval()
     model.to('cpu')
@@ -283,14 +253,11 @@ def main():
         #cli_args.weights_file = 'weights.pt'
 
         path = os.path.join(os.getcwd() + 'weights.pt')
-        print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!' + str(path))
+
         cli_args.weights_file = path
 
     make_directories.main_for_directories() # make the directories for results, nn_mask, threshold, and area filtered
 
-    #
-    # parent_of_images_directory = Path(os.getcwd()).resolve().parents[0] # should be photophenosizerkp
-    # print(parent_of_images_directory)
 
     global args
     args = { # if command line configurations were given, they are assigned to keys.
@@ -303,7 +270,6 @@ def main():
         "config": PPConfig(os.getcwd())
     }
 
-    print(args['weights_file'])
     for filename in cli_args.image_files: # for each .tif file
         process_image(filename, args)
 
