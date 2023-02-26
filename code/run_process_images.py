@@ -61,7 +61,7 @@ def run_process_images(folder_selected_as_project_directory, tif_file_names_in_i
         process_images.process_image(image, args)
         index = index + 1
         if(index+1 == (len(tif_file_names_in_images_directory)+1)):
-            print("DONEEE")
+            print("DONEEE")# put this in the scroll bar section
 
 # ********************************************************************************
 def update_scroll(window, already_processed):

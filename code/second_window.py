@@ -22,22 +22,18 @@ import tkinter.messagebox
 from pathlib import Path
 import kickoff_window
 global folder_selected_as_project_directory
-
+import create_kickoff_again
 from run_process_images import run_process_images
 
 
 def create_second_window(folder_selected_as_project_directory, window, tif_file_names_in_images_directory, res_dir):
-    import kickoff_window
-
     config = PPConfig(folder_selected_as_project_directory)
     color = '#0C064A'
-    #window.configure(bg = color)
     fontColor = '#FFFFFF'
     global list_of_configuration_entry_boxes
     list_of_configuration_entry_boxes = []
 
     frame_2 = Frame(window, bg = color, width=999, height=699)
-    #button_frame_frame.pack()
     frame_2.place(relx=0.5, rely=0.5, anchor=CENTER)
     introTextLine1 = Label(frame_2, text = 'Welcome to Photo Phenosizer', font = ('Arial', 50), bg = color, fg = fontColor)
     introTextLine1.place(relx=0.5, rely=0.1, anchor=CENTER)
@@ -53,7 +49,7 @@ def create_second_window(folder_selected_as_project_directory, window, tif_file_
     img = Label(frame_2, image=more_info_image)
     more_info_image.image = more_info_image
 
-    more_info_button= Button(window, image = more_info_image, command=lambda: info_popup('threshold'), borderwidth=0, height= 18, width= 22)
+    more_info_button= Button(frame_2, image = more_info_image, command=lambda: info_popup('threshold'), borderwidth=0, height= 18, width= 22)
     more_info_button.place(relx=0.32, rely=0.2, anchor=CENTER)
 
     #----------------------- Checkbox ---------------------------
@@ -63,7 +59,7 @@ def create_second_window(folder_selected_as_project_directory, window, tif_file_
     list_of_configuration_entry_boxes.append(threshold_entry_box)
 
     #--------------- Label and text entry box for kernel size ------------
-    kernel_size_label = Label(window, text = 'Kernel size: ', font = ('Arial', 15), bg = color, fg = fontColor)
+    kernel_size_label = Label(frame_2, text = 'Kernel size: ', font = ('Arial', 15), bg = color, fg = fontColor)
     kernel_size_label.place(relx=0.4, rely=0.3, anchor=CENTER)
     kernel_size_entry_box = tk.Entry(frame_2, bd =5)
     kernel_size_entry_box.insert(END, str(config.kernel_size))
@@ -91,13 +87,15 @@ def create_second_window(folder_selected_as_project_directory, window, tif_file_
     ask_to_select_weights_file_label.place(relx=0.1, rely=0.5, anchor=CENTER)
 
     entry_box_for_weights_path=tk.Entry(frame_2, width = 60, font=40)
-    entry_box_for_weights_path.insert(END, os.path.join(folder_selected_as_project_directory, config.weights_file)) # automatically chose the weights.pt file that is in the main project directory
+    path_of_weights_file = str(os.path.dirname(config.weights_file))
+    entry_box_for_weights_path.insert(END, path_of_weights_file) # automatically chose the weights.pt file that is in the main project directory
     entry_box_for_weights_path.place(relx=0.5, rely=0.5, anchor=CENTER)
     list_of_configuration_entry_boxes.append(entry_box_for_weights_path)
     file_image_to_click = PhotoImage(file='weights_file_upload_image.png')
     file_image_label = Label(image = file_image_to_click)
     file_image_label.image = file_image_to_click
-    file_image_button= Button(window, image = file_image_to_click,command= open_weights_file, borderwidth=0, height= 23, width= 25)
+    file_image_button= Button(frame_2, image = file_image_to_click,command= lambda:  open_weights_file(entry_box_for_weights_path), borderwidth=0, height= 23, width= 25)
+
     file_image_button.place(relx=0.758, rely=0.5, anchor=CENTER)
 
     #----------------------- Checkbox ----------------------------------
@@ -117,43 +115,27 @@ def create_second_window(folder_selected_as_project_directory, window, tif_file_
 
     # ------------------------------- Run Button---------------------
     #the_code_directory = os.path.dirname(os.path.abspath('second_window.py'))
-    run_button = Button(button_frame, text ='Run', command = lambda: run_process_images(folder_selected_as_project_directory, tif_file_names_in_images_directory, window, res_dir)) # look into ways to pass the project dir at binding time. Project dir is param for process, in process, get list of images.
+    run_button = Button(button_frame, text ='Run', command = lambda: run_process_images(folder_selected_as_project_directory, tif_file_names_in_images_directory, window, res_dir))
+    # WHEN CLICK RUN, CHECK IF WEIGHTS FILE IS LEGIT
+
     run_button.place(relx=0.8, rely=0.5, anchor=CENTER)
 
     # --------------------- Back Button ---------------------
-    back_button = Button(button_frame, text ='Back', command = back)
+    back_button = Button(button_frame, text ='Back', command = lambda: back(frame_2, window))
     back_button.place(relx=0.2, rely=0.5, anchor=CENTER)
-
-    # thresh_val = threshold_entry_box.get()
-    # kernel_val = kernel_size_entry_box.get()
-    # min_val = min_size_entry_box.get()
-
-    # update_configs(thresh_val, kernel_val, min_val, folder_selected_as_project_directory, res_dir)
     return window
 
 def return_list_of_configuration_boxes():
     return list_of_configuration_entry_boxes
+# when leave the entry box, check if acceptable value.
+# When press run, check again and
 
-# def update_configs(thresh_val, kernel_val, min_val, folder_selected_as_project_directory, res_dir):
-#
-#     print('threshbox: ' + thresh_val)
-#
-#
-#     configuration = PPConfig(folder_selected_as_project_directory)
-#     configuration.threshold = int(thresh_val)
-#     configuration.kernel_size = int(kernel_val)
-#     configuration.min_size = int(min_val)
-#     configuration.write_config()
-#
-#     #global args
-#     args = {
-#         "results_directory": res_dir,
-#         "weights_file": weights_box,
-#         "write_nn_mask": kern_box,
-#         "write_threshold_mask": thresh_box,
-#         "write_area_filtered" : min_box,
-#         "config": configuration
-#     }
+#def check_if_weights_file_is_legit():
+    # get the weights file assignment from config
+
+    # check to see if there is actually a weights file where the user said there would be one.
+    # get the parent directory of the weights file.
+
 
 def info_popup(threshold_or_kernel_size_or_min_size):
     if (threshold_or_kernel_size_or_min_size == 'threshold'):
@@ -166,11 +148,24 @@ def info_popup(threshold_or_kernel_size_or_min_size):
         popup_title = "More info on min size"
         tkinter.messagebox.showinfo(popup_title,  "The min size can be 1-1000. This is the minimum Feret diameter. ")
 
-def back():
-    return 'back'
+def back(frame_2, window): # destroy the kickoff window
 
-def open_weights_file():
-     weights_file_selected = filedialog.askopenfile() # ask what weights file to use.
+    exists = frame_2.winfo_exists() # check if frame exists.
+    if exists == 1: # If the frame exists, destroy the widgets.
+        for widget in frame_2.winfo_children():
+            widget.destroy()
+        create_kickoff_again.create_kickoff_again(window)
+
+
+
+def open_weights_file(entry_box_for_weights_path):
+     weights_file_selected = filedialog.askopenfilename() # ask what weights file to use.
+     entry_box_for_weights_path.delete(0, END) # clear the entry box because it had the configured path
+     print(weights_file_selected)
+
+     entry_box_for_weights_path.insert(END, str(weights_file_selected)) # insert this new bath into the entry box.
+
+
 
 def make_mask_directories_here(res_dir, checked_or_unchecked):
     if(checked_or_unchecked.get() == 1): # if the user checks the box saying that they want to save the configuration images, make the directories to save those images

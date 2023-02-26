@@ -91,14 +91,18 @@ def process_image(image_filename, args):
 
     input_img = Image.open(image_filename).convert("RGB")
 
-    the_code_directory = os.path.dirname(os.path.abspath('process_images.py'))
-    os.chdir(the_code_directory)
-    nn_mask = nn_predict(input_img, args['weights_file'])
+    the_code_directory = os.path.dirname(os.path.abspath('process_images.py')) # get the code directory
+    #os.chdir(the_code_directory)
 
     images_directory_name = os.path.dirname(os.path.abspath(image_filename))
     project_dir = os.path.dirname(os.path.abspath(images_directory_name))
+    os.chdir(project_dir)
+    print('project dir:' + project_dir)
+    nn_mask = nn_predict(input_img, args['weights_file'])
 
-    os.chdir(project_dir) # need to go to the project dir to get config.ini
+
+
+    #os.chdir(project_dir) # need to go to the project dir to get config.ini
     threshold_mask = threshold(nn_mask, args["config"].threshold)
     threshold_mask = erod_dilate(threshold_mask, args["config"].kernel_size)
     area_filtered = area_filter(threshold_mask, args["config"].min_size)
