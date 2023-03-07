@@ -87,8 +87,10 @@ def create_second_window(folder_selected_as_project_directory, window, tif_file_
     ask_to_select_weights_file_label.place(relx=0.1, rely=0.5, anchor=CENTER)
 
     entry_box_for_weights_path=tk.Entry(frame_2, width = 60, font=40)
-    path_of_weights_file = str(os.path.dirname(config.weights_file))
-    entry_box_for_weights_path.insert(END, path_of_weights_file) # automatically chose the weights.pt file that is in the main project directory
+    #path_of_weights_file = str(os.path.dirname(config.weights_file) + '/' + config.weights_file)
+    path_of_weights_file = str(config.weights_file)
+    entry_box_for_weights_path.insert(END, config.weights_file) # automatically chose the last used weights.pt file.
+    print('weights entry box: ' + str(path_of_weights_file))
     entry_box_for_weights_path.place(relx=0.5, rely=0.5, anchor=CENTER)
     list_of_configuration_entry_boxes.append(entry_box_for_weights_path)
     file_image_to_click = PhotoImage(file='weights_file_upload_image.png')
@@ -127,15 +129,6 @@ def create_second_window(folder_selected_as_project_directory, window, tif_file_
 
 def return_list_of_configuration_boxes():
     return list_of_configuration_entry_boxes
-# when leave the entry box, check if acceptable value.
-# When press run, check again and
-
-#def check_if_weights_file_is_legit():
-    # get the weights file assignment from config
-
-    # check to see if there is actually a weights file where the user said there would be one.
-    # get the parent directory of the weights file.
-
 
 def info_popup(threshold_or_kernel_size_or_min_size):
     if (threshold_or_kernel_size_or_min_size == 'threshold'):
@@ -159,11 +152,14 @@ def back(frame_2, window): # destroy the kickoff window
 
 
 def open_weights_file(entry_box_for_weights_path):
-     weights_file_selected = filedialog.askopenfilename() # ask what weights file to use.
-     entry_box_for_weights_path.delete(0, END) # clear the entry box because it had the configured path
-     print(weights_file_selected)
-
-     entry_box_for_weights_path.insert(END, str(weights_file_selected)) # insert this new bath into the entry box.
+     weights_file_selected = filedialog.askopenfilename() # ask for the weights file
+     if not (weights_file_selected.endswith('.pt')): # to see if the weights file is acceptable, check if the extension is '.pt'
+         tkinter.messagebox.showwarning('Weights File Error',  "Please select a weights file. The file must have extension '.pt'")
+     else: # if the new weights file selected is acceptable, replace the entry box text with the path.
+         entry_box_for_weights_path.delete(0, END) # clear the entry box because it had the configured path
+         entry_box_for_weights_path.insert(END, str(weights_file_selected)) # insert this new path into the entry box.
+         del list_of_configuration_entry_boxes[3] # delete the old weights file element in this list. It is at index 3
+         list_of_configuration_entry_boxes.insert(3, str(weights_file_selected))# write the weights path (at index 3) in the list_of_configuration_entry_boxes
 
 
 

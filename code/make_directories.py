@@ -32,7 +32,7 @@ def make_mask_directories(res_dir):
 # do all of the above functions
 def main_for_directories():
     make_results_directory()
-    make_mask_directories()
+    make_mask_directories() # this function is called when a user would like the subdirectories with supplementary images in their results folder. 
 
 
 if __name__ == "__main_for_directories__":

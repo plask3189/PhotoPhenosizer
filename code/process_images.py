@@ -20,7 +20,6 @@ import make_directories
 import kickoff_window
 
 
-
 config_object = ConfigParser()
 config_object.read("config.ini") # Read the config.ini file that is generated from pp_config.py
 
@@ -72,9 +71,6 @@ def write_image(original_filename, string_label, image, results_directory):
 
             #os.chdir('../') # move back to the project directory
 
-
-
-
 def process_image(image_filename, args):
     """
     Processes the (image_filename) image to get dimensions of
@@ -98,9 +94,8 @@ def process_image(image_filename, args):
     project_dir = os.path.dirname(os.path.abspath(images_directory_name))
     os.chdir(project_dir)
     print('project dir:' + project_dir)
+    print('args weights: ' + args['weights_file'])
     nn_mask = nn_predict(input_img, args['weights_file'])
-
-
 
     #os.chdir(project_dir) # need to go to the project dir to get config.ini
     threshold_mask = threshold(nn_mask, args["config"].threshold)

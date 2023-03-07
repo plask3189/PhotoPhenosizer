@@ -13,16 +13,9 @@ class PPConfig:
         self.min_size = 700
 
         if os.path.isfile(self.filename): # if there is already a 'config.ini' file, we read the values from the parser and overwrite the defaults
-            #navigate to the code directory
-            parent_of_project_directory = Path(project_directory).resolve().parents[0] # should be photophenosizerkp. Then need to navigate down to the code directory.
-            code_directory = os.path.join(parent_of_project_directory, 'code')
 
-
-
-            self.weights_file = os.path.join(code_directory, 'weights.pt') #get the weights file
-            x = self.weights_file
-
-
+            self.weights_file = os.path.join(project_directory, 'weights.pt')
+            print("line 18: " + self.weights_file)
             self.config_parser.read(self.filename) # read config.ini
             sections = self.config_parser.sections() # get the sections of config.ini
 
@@ -36,7 +29,7 @@ class PPConfig:
 
             if 'NN' in sections:
                 if 'weights_file' in self.config_parser['NN']:
-                    self.weights_file = self.config_parser['NN']['weights_file']
+                    self.weights_file = self.config_parser['NN']['weights_file'] # get the string in the 'weights_file' part of the 'NN' section in the config file.  Assign this string to the variable self.weights_file. 
 
         else: # if there is not already a config.ini file, make one.
             self.write_config()

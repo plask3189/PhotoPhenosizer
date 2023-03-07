@@ -26,29 +26,35 @@ import kickoff_window
 import second_window
 
 def run_process_images(folder_selected_as_project_directory, tif_file_names_in_images_directory, window, res_dir):
+
+    # ------ Get the entry boxes' values--------
     entry_boxes = second_window.return_list_of_configuration_boxes()
     list_of_config_boxes = second_window.return_list_of_configuration_boxes()
     thresh_box = list_of_config_boxes[0]
     kern_box = list_of_config_boxes[1]
     min_box = list_of_config_boxes[2]
-    weights_box = list_of_config_boxes[3]
+    weights_path = list_of_config_boxes[3]
+    #-----------------------------------------
 
-    configuration = PPConfig(folder_selected_as_project_directory)
+    configuration = PPConfig(folder_selected_as_project_directory) # create an object of PPConfig called configuration.
+    # ------ Assign values to 'configuration' object's sections--------
     configuration.threshold = int(thresh_box.get())
     configuration.kernel_size = int(kern_box.get())
     configuration.min_size = int(min_box.get())
-    configuration.write_config()
-
+    configuration.weights_file = weights_path
+    configuration.write_config() # update the configuration file with the possibly new values
+    #-----------------------------------------
+    print('weights_path')
     global args
     args = {
         "results_directory": res_dir,
-        "weights_file": weights_box.get(),
+        "weights_file": weights_path,
         "write_nn_mask": kern_box.get(),
         "write_threshold_mask": thresh_box.get(),
         "write_area_filtered" : min_box.get(),
         "config": configuration
     }
-    #global already_processed
+
     images_dir_path = os.path.join(folder_selected_as_project_directory, 'Images')
 
     already_processed = []
@@ -57,10 +63,12 @@ def run_process_images(folder_selected_as_project_directory, tif_file_names_in_i
     for image in tif_file_names_in_images_directory: #for each image in the Images directory:
         os.chdir(images_dir_path)
         already_processed.append(image) # add the image name to the list of already processed images
-        update_scroll(window, already_processed) # update the section with the scrollbar to display images names as they are processed
+        update_scroll(window, already_processed) # update the section with the scrollbar to display the list of images names as they are processed
         process_images.process_image(image, args)
         index = index + 1
         if(index+1 == (len(tif_file_names_in_images_directory)+1)):
+            already_processed.append('DONE')
+            update_scroll(window, already_processed)
             print("DONEEE")# put this in the scroll bar section
 
 # ********************************************************************************
