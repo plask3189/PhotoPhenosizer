@@ -1,0 +1,34 @@
+# pyproject.toml tells frontend build tools like pip which backend tool to use to make distribution packages for the project.
+
+[build-system]
+requires = ["setuptools>=61.0"] #requires is a list of packages that are needed to build your package. You don’t need to install them; build frontends like pip will install them automatically in a temporary, isolated virtual environment for use during the build process.
+
+build-backend = "setuptools.build_meta" # build-backend is the name of the Python object that frontends will use to perform the build.
+
+[project.gui-scripts]
+startup = "photophenosizer_gui.startup" # runs the startup method in __init__.py which in turn runs kickoff_window.main()
+
+[project]
+name = "photophenosizer_gui"
+version = "0.0.1"
+
+authors = [
+  { name="Kate Plas", email="kateplas45208@gmail.com" },
+]
+
+description = "An interface to measure yeast cell dimensions"
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+dependencies = [
+    "pysimplegui",
+    "BazSpam == 1.1",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/plask3189/PhotoPhenosizer"

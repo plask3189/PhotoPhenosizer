@@ -21,8 +21,6 @@ import make_directories
 import tkinter.messagebox
 from pathlib import Path
 import kickoff_window
-global folder_selected_as_project_directory
-import create_kickoff_again
 from run_process_images import run_process_images
 
 
@@ -38,97 +36,103 @@ def create_second_window(folder_selected_as_project_directory, window, tif_file_
     introTextLine1 = Label(frame_2, text = 'Welcome to Photo Phenosizer', font = ('Arial', 50), bg = color, fg = fontColor)
     introTextLine1.place(relx=0.5, rely=0.1, anchor=CENTER)
 
-    #----------------------- Threshold label ---------------------------
-    threshold_label = Label(frame_2, text = 'Threshold value: ', font = ('Arial', 15), bg = color, fg = fontColor)
-    threshold_label.place(relx=0.4, rely=0.2, anchor=CENTER)
 
-    #----------------------- More info button for threshold -------------------------
+    #----------------------- Threshold ---------------------------
+    threshold_label = Label(frame_2, text = 'Threshold value: ', font = ('Arial', 15), bg = color, fg = fontColor)
+    threshold_label.place(relx=0.43, rely=0.2, anchor=CENTER)
+    threshold_entry_box = ttk.Entry(frame_2, width = 7, font=40)
+    threshold_entry_box.insert(END, str(config.threshold)) # automatically insert the last-used threshold value into the entry box.
+    threshold_entry_box.place(relx=0.55, rely=0.2, anchor=CENTER)
+    # Threshold Domain Checking:
+    reg = frame_2.register(thresh_callback) # the registered callback
+    threshold_entry_box.config(validate="focusout", validatecommand=(reg, '%P'))
+    # "validate" is used to specify when the callback function will be called. So when "focusout" of entry box, do the validate command. validatecommand is used to specify the callback function. ‘%P’ is the value that the text will have if the change is allowed.
+
+    list_of_configuration_entry_boxes.append(threshold_entry_box) # if valid, append to list.
+
+    #----- More info button for threshold: -----
     the_code_directory = os.path.dirname(os.path.abspath('second_window.py')) # get the code directory, which is the same directory where this file is located! That way, we do not need to use 'getcwd(),' which we are trying to avoid.
     more_info_image = Image.open(the_code_directory + '/more_info_icon.png')
     more_info_image = ImageTk.PhotoImage(more_info_image)
     img = Label(frame_2, image=more_info_image)
     more_info_image.image = more_info_image
 
-    more_info_button= Button(frame_2, image = more_info_image, command=lambda: info_popup('threshold'), borderwidth=0, height= 18, width= 22)
+    more_info_button = Button(frame_2, image = more_info_image, command=lambda: info_popup('threshold'), borderwidth=0, height= 18, width= 22)
     more_info_button.place(relx=0.32, rely=0.2, anchor=CENTER)
 
-    #----------------------- Checkbox ---------------------------
-    threshold_entry_box = tk.Entry(frame_2, bd =5)
-    threshold_entry_box.insert(END, str(config.threshold))
-    threshold_entry_box.place(relx=0.6, rely=0.2, anchor=CENTER)
-    list_of_configuration_entry_boxes.append(threshold_entry_box)
 
-    #--------------- Label and text entry box for kernel size ------------
+    #----------------------- Kernel Size ---------------------------
     kernel_size_label = Label(frame_2, text = 'Kernel size: ', font = ('Arial', 15), bg = color, fg = fontColor)
-    kernel_size_label.place(relx=0.4, rely=0.3, anchor=CENTER)
-    kernel_size_entry_box = tk.Entry(frame_2, bd =5)
+    kernel_size_label.place(relx=0.43, rely=0.3, anchor=CENTER)
+    #kernel_size_entry_box = tk.Entry(frame_2, bd =5)
+    kernel_size_entry_box= ttk.Entry(frame_2, width = 7, font=40)
     kernel_size_entry_box.insert(END, str(config.kernel_size))
-    kernel_size_entry_box.place(relx=0.6, rely=0.3, anchor=CENTER)
+    kernel_size_entry_box.place(relx=0.55, rely=0.3, anchor=CENTER)
+    # Kernel Size Domain Checking:
+    kern_reg = frame_2.register(kern_callback)
+    kernel_size_entry_box.config(validate="focusout", validatecommand=(kern_reg, '%P'))
+    # ---------------------------------------
     list_of_configuration_entry_boxes.append(kernel_size_entry_box)
 
-    #----------------------- More info button for kernel size -----------------------
+    #----------------------- Min Size ---------------------------
     more_info_button_for_kernel_size= Button(frame_2, image = more_info_image,command= lambda: info_popup('kernel_size'), borderwidth=0, height= 18, width= 22)
     more_info_button_for_kernel_size.place(relx=0.32, rely=0.3, anchor=CENTER)
 
-    #--------------- Label and text entry box for min size ------------
+    # Label and text entry box for min size:
     min_size_label = Label(frame_2, text = 'Min size: ', font = ('Arial', 15), bg = color, fg = fontColor)
-    min_size_label.place(relx=0.4, rely=0.4, anchor=CENTER)
-    min_size_entry_box = tk.Entry(frame_2, bd =5)
+    min_size_label.place(relx=0.43, rely=0.4, anchor=CENTER)
+    min_size_entry_box= ttk.Entry(frame_2, width = 7, font=40)
     min_size_entry_box.insert(END, str(config.min_size))
-    min_size_entry_box.place(relx=0.6, rely=0.4, anchor=CENTER)
+    min_size_entry_box.place(relx=0.55, rely=0.4, anchor=CENTER)
+    # Kernel Size Domain Checking:
+    min_reg = frame_2.register(min_callback)
+    min_size_entry_box.config(validate="focusout", validatecommand=(min_reg, '%P'))
+    print
     list_of_configuration_entry_boxes.append(min_size_entry_box)
 
-    #----------------------- More info button for min size ---------------------------
+    # More info button for min size:
     more_info_button_for_min_size= Button(frame_2, image = more_info_image,command = lambda: info_popup('min_size'), borderwidth=0, height= 18, width= 22)
     more_info_button_for_min_size.place(relx=0.32, rely=0.4, anchor=CENTER)
 
-    #------------- To upload weights file------------------
+    #-------------------------- Upload Weights File------------------
     ask_to_select_weights_file_label = Label(frame_2, text = 'Select the weights file:', font = ('Arial', 15), bg = color, fg = fontColor)
     ask_to_select_weights_file_label.place(relx=0.1, rely=0.5, anchor=CENTER)
 
-    entry_box_for_weights_path=tk.Entry(frame_2, width = 60, font=40)
-    #path_of_weights_file = str(os.path.dirname(config.weights_file) + '/' + config.weights_file)
+    entry_box_for_weights_path=ttk.Entry(frame_2, width = 60, font=40)
     path_of_weights_file = str(config.weights_file)
     entry_box_for_weights_path.insert(END, config.weights_file) # automatically chose the last used weights.pt file.
     print('weights entry box: ' + str(path_of_weights_file))
     entry_box_for_weights_path.place(relx=0.5, rely=0.5, anchor=CENTER)
-    list_of_configuration_entry_boxes.append(entry_box_for_weights_path)
+    list_of_configuration_entry_boxes.append(path_of_weights_file)
     file_image_to_click = PhotoImage(file='weights_file_upload_image.png')
     file_image_label = Label(image = file_image_to_click)
     file_image_label.image = file_image_to_click
     file_image_button= Button(frame_2, image = file_image_to_click,command= lambda:  open_weights_file(entry_box_for_weights_path), borderwidth=0, height= 23, width= 25)
-
     file_image_button.place(relx=0.758, rely=0.5, anchor=CENTER)
 
-    #----------------------- Checkbox ----------------------------------
+    #------------------------------ Checkbox ----------------------------------
     checked_or_unchecked = tk.IntVar()
     checkbox = tk.Checkbutton(frame_2, text='Check here if you would like to save area filtered, NN, and threshold mask images',variable=checked_or_unchecked, onvalue=1, offvalue=0, command= lambda: make_mask_directories_here(res_dir, checked_or_unchecked))
     checkbox.place(relx=0.5, rely=0.6, anchor=CENTER)
 
-    #------------------------------- Button Frame---------------------
+    #----------------------------- Button Frame---------------------
     white_color = '#FFFFFF'
-    button_frame_frame = Frame(frame_2, bg = white_color, width = 205, height = 51.25)
+    button_frame = Frame(frame_2, bg = white_color, width = 205, height = 51.25)
     #button_frame_frame.pack()
-    button_frame_frame.place(relx=0.5, rely=0.7, anchor=CENTER)
-    grey_color = '#000000'
-    button_frame = Frame(button_frame_frame, bg = grey_color, width = 200.5, height = 49.5)
-    #button_frame.pack()
-    button_frame.place(relx=0.5, rely=0.5, anchor=CENTER)
+    button_frame.place(relx=0.5, rely=0.7, anchor=CENTER)
 
     # ------------------------------- Run Button---------------------
-    #the_code_directory = os.path.dirname(os.path.abspath('second_window.py'))
-    run_button = Button(button_frame, text ='Run', command = lambda: run_process_images(folder_selected_as_project_directory, tif_file_names_in_images_directory, window, res_dir))
-    # WHEN CLICK RUN, CHECK IF WEIGHTS FILE IS LEGIT
-
+    print("list of config entry boxes: " + str(list_of_configuration_entry_boxes))
+    length = len(list_of_configuration_entry_boxes)
+    print("sec win: leng of list: " + str(length))
+    run_button = Button(button_frame, text ='Run', command = lambda: run_process_images(folder_selected_as_project_directory, tif_file_names_in_images_directory, window, res_dir, list_of_configuration_entry_boxes))
     run_button.place(relx=0.8, rely=0.5, anchor=CENTER)
 
     # --------------------- Back Button ---------------------
-    back_button = Button(button_frame, text ='Back', command = lambda: back(frame_2, window))
+    back_button = Button(button_frame, text ='Back', command = lambda: back( window))
     back_button.place(relx=0.2, rely=0.5, anchor=CENTER)
     return window
 
-def return_list_of_configuration_boxes():
-    return list_of_configuration_entry_boxes
 
 def info_popup(threshold_or_kernel_size_or_min_size):
     if (threshold_or_kernel_size_or_min_size == 'threshold'):
@@ -141,15 +145,10 @@ def info_popup(threshold_or_kernel_size_or_min_size):
         popup_title = "More info on min size"
         tkinter.messagebox.showinfo(popup_title,  "The min size can be 1-1000. This is the minimum Feret diameter. ")
 
-def back(frame_2, window): # destroy the kickoff window
-
-    exists = frame_2.winfo_exists() # check if frame exists.
-    if exists == 1: # If the frame exists, destroy the widgets.
-        for widget in frame_2.winfo_children():
-            widget.destroy()
-        create_kickoff_again.create_kickoff_again(window)
-
-
+def back(window): # destroy the kickoff window
+    window.quit()
+    #exec(open('kickoff_window.py').read())
+    kickoff_window.main()
 
 def open_weights_file(entry_box_for_weights_path):
      weights_file_selected = filedialog.askopenfilename() # ask for the weights file
@@ -161,11 +160,28 @@ def open_weights_file(entry_box_for_weights_path):
          del list_of_configuration_entry_boxes[3] # delete the old weights file element in this list. It is at index 3
          list_of_configuration_entry_boxes.insert(3, str(weights_file_selected))# write the weights path (at index 3) in the list_of_configuration_entry_boxes
 
-
-
 def make_mask_directories_here(res_dir, checked_or_unchecked):
     if(checked_or_unchecked.get() == 1): # if the user checks the box saying that they want to save the configuration images, make the directories to save those images
         make_directories.make_mask_directories(res_dir)
+
+
+def thresh_callback(input):
+    input = int(input)
+    if input > 255 or input < 0 or input == "":
+        tkinter.messagebox.showwarning('Domain Error',  "Please use a threshold value 0-255")
+        return False # callback function returns false if input is invalid. When return false, the user's attempt to edit the entry box's text is refused so the text is unchanged.
+
+def kern_callback(input):
+    kern = int(input)
+    if kern > 500 or kern < 2 or kern == "":
+        tkinter.messagebox.showwarning('Domain Error',  "Please use a kernel size 2-500")
+        return False
+
+def min_callback(input):
+    min = int(input)
+    if min < 1 or min > 1000 or min == "":
+        tkinter.messagebox.showwarning('Domain Error',  "Please use a min size 1-1000")
+        return False
 
 def main(): # main listens for events to happen
     window = create_second_window()
