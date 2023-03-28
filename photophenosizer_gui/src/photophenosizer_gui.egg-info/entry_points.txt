@@ -1,0 +1,2 @@
+[gui_scripts]
+startup = photophenosizer_gui.startup
