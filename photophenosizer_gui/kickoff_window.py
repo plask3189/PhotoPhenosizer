@@ -133,6 +133,9 @@ def choose_valid_folder_popup():
     tkinter.messagebox.showwarning(popup_title,  "Please select a project directory contianing an 'Images' folder")
 
 def main(): # main listens for events to happen
+    print("✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨")
+    print("✨✨ Welcome to PhotoPhenosizer ✨✨")
+    print("✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨")
     window = kickoff_window()
     window.mainloop()
 

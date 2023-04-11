@@ -27,31 +27,25 @@ import second_window
 
 def run_process_images(folder_selected_as_project_directory, tif_file_names_in_images_directory, window, res_dir, list_of_configuration_entry_boxes):
 
-
-    print("list of config entry boxes: " + str(list_of_configuration_entry_boxes))
-
-    length = len(list_of_configuration_entry_boxes)
-    print("run win: leng of list: " + str(length))
-
     thresh_box = list_of_configuration_entry_boxes[0]
     kern_box = list_of_configuration_entry_boxes[1]
     min_box = list_of_configuration_entry_boxes[2]
-    weights_box =list_of_configuration_entry_boxes[3]
-    #-----------------------------------------
-    print(list_of_configuration_entry_boxes)
+    weights_filepath =list_of_configuration_entry_boxes[3] # this is the actual filepath.
+
     configuration = PPConfig(folder_selected_as_project_directory) # create an object of PPConfig called configuration.
+
     # ------ Assign values to 'configuration' object's sections--------
-    configuration.threshold = int(thresh_box.get())
+    configuration.threshold = int(thresh_box.get()) # get the value from the entry box
     configuration.kernel_size = int(kern_box.get())
     configuration.min_size = int(min_box.get())
-    configuration.weights_file = weights_box
+    configuration.weights_file = weights_filepath
     configuration.write_config() # update the configuration file with the possibly new values
     #-----------------------------------------
 
     global args
     args = {
         "results_directory": res_dir,
-        "weights_file": weights_box,
+        "weights_file": weights_filepath,
         "write_nn_mask": kern_box.get(),
         "write_threshold_mask": thresh_box.get(),
         "write_area_filtered" : min_box.get(),

@@ -117,6 +117,9 @@ def create_second_window(folder_selected_as_project_directory, window, tif_file_
     file_image_button= Button(frame_2, image = file_image_to_click,command= lambda:  open_weights_file(entry_box_for_weights_path), borderwidth=0, height= 23, width= 25)
     file_image_button.place(relx=0.758, rely=0.5, anchor=CENTER)
 
+    weights_reg = frame_2.register(weights_callback)
+    entry_box_for_weights_path.config(validate="focusout", validatecommand=(weights_reg, '%P'))
+
     #------------------------------ Checkbox ----------------------------------
     checked_or_unchecked = tk.IntVar()
     checkbox = tk.Checkbutton(frame_2, text='Check here if you would like to save area filtered, NN, and threshold mask images',variable=checked_or_unchecked, onvalue=1, offvalue=0, command= lambda: make_mask_directories_here(res_dir, checked_or_unchecked))
@@ -158,14 +161,17 @@ def back(window): # destroy the kickoff window
     kickoff_window.main()
 
 def open_weights_file(entry_box_for_weights_path):
-     weights_file_selected = filedialog.askopenfilename() # ask for the weights file
-     if not (weights_file_selected.endswith('.pt')): # to see if the weights file is acceptable, check if the extension is '.pt'
+     weights_filepath_selected = filedialog.askopenfilename() # ask for the weights file
+     print("weights fil selected: " + weights_filepath_selected)
+     if not (weights_filepath_selected.endswith('.pt')): # to see if the weights file is acceptable, check if the extension is '.pt'
          tkinter.messagebox.showwarning('Weights File Error',  "Please select a weights file. The file must have extension '.pt'")
+     if not os.path.exists(weights_filepath_selected):
+         tkinter.messagebox.showwarning('File Path Error',  "Please use a filepath for weights.pt that exists.")
      else: # if the new weights file selected is acceptable, replace the entry box text with the path.
          entry_box_for_weights_path.delete(0, END) # clear the entry box because it had the configured path
-         entry_box_for_weights_path.insert(END, str(weights_file_selected)) # insert this new path into the entry box.
+         entry_box_for_weights_path.insert(END, str(weights_filepath_selected)) # insert this new path into the entry box.
          del list_of_configuration_entry_boxes[3] # delete the old weights file element in this list. It is at index 3
-         list_of_configuration_entry_boxes.insert(3, str(weights_file_selected))# write the weights path (at index 3) in the list_of_configuration_entry_boxes
+         list_of_configuration_entry_boxes.insert(3, str(weights_filepath_selected))# write the weights path (at index 3) in the list_of_configuration_entry_boxes
 
 def make_mask_directories_here(res_dir, checked_or_unchecked):
     if(checked_or_unchecked.get() == 1): # if the user checks the box saying that they want to save the configuration images, make the directories to save those images
@@ -189,6 +195,17 @@ def min_callback(input):
     if min < 1 or min > 1000 or min == "":
         tkinter.messagebox.showwarning('Domain Error',  "Please use a min size 1-1000")
         return False
+
+def weights_callback(input):
+
+    if not (input.endswith('.pt')): # to see if the weights file is acceptable, check if the extension is '.pt'
+        tkinter.messagebox.showwarning('Weights File Error',  "Please select a weights file. The file must have extension '.pt'")
+        return False
+    if not os.path.exists(input):
+        tkinter.messagebox.showwarning('File Path Error',  "Please use a filepath for weights.pt that exists.")
+        return False
+    else:
+        return True
 
 def main(): # main listens for events to happen
     window = create_second_window()

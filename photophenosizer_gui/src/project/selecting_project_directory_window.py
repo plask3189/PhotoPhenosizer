@@ -41,6 +41,11 @@ def kickoff_window():
 
     introTextLine1 = Label(window, text = 'Welcome to Photo Phenosizer', font = ('Arial', 50), bg = color, fg = fontColor)
     introTextLine1.place(relx=0.5, rely=0.1, anchor=CENTER)
+
+    introTextLine1 = Label(window, text = "A rapid machine learning-based method to measure cell dimensions", font = ('Arial', 15), bg = color, fg = fontColor)
+    introTextLine1.place(relx=0.5, rely=0.17, anchor=CENTER)
+
+
     ask_to_select_main_directory_label = Label(frame_1, text = 'Select your project directory:', font = ('Arial', 15), bg = color, fg = fontColor)
     ask_to_select_main_directory_label.place(relx=0.32, rely=0.25, anchor=CENTER)
 
@@ -49,32 +54,60 @@ def kickoff_window():
 
     #folder_selected_as_project_directory = entry_box_for_file_path.get()
     home_directory = os.path.expanduser( '~' )
-    projdir_path = os.path.join(home_directory, "pp", "user_project_directory.txt")
+    projdir_path = os.path.join(home_directory, "pp", "user_project_directory.txt") # this is the hidden file. Maybe put it in the data dir? If not look into how to include this file when the user downloads.
+
     with open(projdir_path) as f:
         folder_selected_as_project_directory = f.readlines() # get whatever is in the text file.
-
+    folder_selected_as_project_directory = ''.join(map(str,folder_selected_as_project_directory)) # The folder_selected_as_project_directory was a list, so converting it into a string.
     entry_box_for_file_path.insert(END, folder_selected_as_project_directory) # insert whatever what was in the text file into the entry box. When the user first executes this program, the file will be blank, so nothing will be inserted into the entry box.
 
+    # this is a test to see if we can access the data folder.
     data_path = os.path.join(os.path.dirname(__file__), 'data', 'data1.txt')
     with open(data_path, 'r') as data_file:
         file = data_file.read()
     print(str(file))
 
-    filepath_for_image = os.path.join(os.path.dirname(__file__), 'data', 'folder_download_image.png')
+    filepath_for_image = os.path.join(os.path.dirname(__file__), 'data', 'getFolder.png')
     folder_image_to_click = Image.open(filepath_for_image)
-    print("AHH" + str(folder_image_to_click))
     folder_image_to_click = ImageTk.PhotoImage(folder_image_to_click)
     #folder_image_to_click = PhotoImage(file='folder_download_image.png')
 
     folder_image_label = Label(image = folder_image_to_click)
     folder_image_label.image = folder_image_to_click
-    folder_image_button= tk.Button(frame_1, image = folder_image_to_click,command= lambda: open_file(entry_box_for_file_path), borderwidth=0, height= 20, width= 20)
-    folder_image_button.place(relx=0.76, rely=0.3, anchor=CENTER)
+    folder_image_button= tk.Button(frame_1, image = folder_image_to_click,command= lambda: open_file(entry_box_for_file_path), borderwidth=0, height= 20, width= 24.2)
+    folder_image_button.place(relx=0.80, rely=0.3, anchor=CENTER)
 
     #---------------------- next button ------------------------
-    next_button = Button(frame_1, text ='  Next  ', command = lambda: get_tif_files(folder_selected_as_project_directory, frame_1, entry_box_for_file_path), borderwidth=0) # need lambda bc otherwise get_tif_files runs immedietly when we execute this file
+    # next_button = Button(frame_1, text ='  Next  ', command = lambda: get_tif_files(folder_selected_as_project_directory, frame_1, entry_box_for_file_path), borderwidth=0) # need lambda bc otherwise get_tif_files runs immedietly when we execute this file
+    # next_button.place(relx=0.5, rely=0.5, anchor=CENTER)
+
+    next_button_image_filepath = os.path.join(os.path.dirname(__file__), 'data', 'next_button.png')
+    next_button_img_to_click = Image.open(next_button_image_filepath)
+    next_button_img_to_click = ImageTk.PhotoImage(next_button_img_to_click)
+
+
+    next_button_label = Label(image = next_button_img_to_click)
+    next_button_label.image = next_button_img_to_click
+    next_button= tk.Button(frame_1, image = next_button_img_to_click,command= lambda:get_tif_files(folder_selected_as_project_directory, frame_1, entry_box_for_file_path), borderwidth=0, height= 50, width= 123) # need lambda bc otherwise get_tif_files runs immedietly when we execute this file
+
+
+
     next_button.place(relx=0.5, rely=0.5, anchor=CENTER)
+
+    # next_button.bind("<Enter>", on_enter)
+    # next_button.bind("<Leave>", on_leave)
+
+
     return window
+
+
+# def on_enter(next_button):
+#     print("next button on enter: " + str(next_button))
+#     next_button['background'] = 'FFFFFF'
+#
+# def on_leave(e):
+#     next_button['background'] = '000000'
+
 
 def open_file(entry_box_for_file_path):
     # If the user presses the button to upload a new path for the project directory
@@ -84,17 +117,17 @@ def open_file(entry_box_for_file_path):
     with open(projdir_path,'w') as file: # Delete the contents of the user_project_directory.txt file
         pass
     folder_selected_as_project_directory = filedialog.askdirectory() # Ask the user to select a project directory. The selected one is assigned to folder_selected_as_project_directory
+    folder_selected_as_project_directory = ''.join(map(str,folder_selected_as_project_directory)) # The folder_selected_as_project_directory was a list, so converting it into a string.
     entry_box_for_file_path.insert(tk.END, folder_selected_as_project_directory) # populate the entry box with the file path.
     # ------- Update text file with newly specified user project directory----------
     with open(projdir_path, 'w') as f:
         f.write(folder_selected_as_project_directory) # write the folder selected as project directory to the user project directory text file.
+
     return folder_selected_as_project_directory
 
 
 def get_tif_files(folder_selected_as_project_directory, frame_1, entry_box_for_file_path):
     project_dir = entry_box_for_file_path.get() # retrieve the text that is in the entry box
-    #project_dir = str(project_dir)
-    project_dir = project_dir[1:-1] # there were braces around the project_dir, so need to remove those in order to recognize its subdirectory Images
     tif_file_names_in_images_directory = [] # the list where tif files will be added
     list_of_all_files_in_directory = []
     print("proj dir: " + project_dir)
@@ -139,6 +172,7 @@ def choose_valid_folder_popup():
     tkinter.messagebox.showwarning(popup_title,  "Please select a project directory contianing an 'Images' folder")
 
 def main(): # main listens for events to happen
+    print("✨✨✨✨✨✨✨✨✨✨✨\n✨ PhotoPhenosizer  ✨\n✨✨✨✨✨✨✨✨✨✨✨")
     window = kickoff_window()
     window.mainloop()
 
