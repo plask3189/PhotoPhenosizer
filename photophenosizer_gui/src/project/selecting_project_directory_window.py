@@ -45,9 +45,18 @@ def kickoff_window():
     introTextLine1 = Label(window, text = "A rapid machine learning-based method to measure cell dimensions", font = ('Arial', 15), bg = color, fg = fontColor)
     introTextLine1.place(relx=0.5, rely=0.17, anchor=CENTER)
 
+    verticle_axis_for_selection_label = 0.25
+    horizontal_axis_for_selection_label = 0.32
+    ask_to_select_main_directory_label = Label(frame_1, text = 'Select your project folder:', font = ('Arial', 15), bg = color, fg = fontColor)
+    ask_to_select_main_directory_label.place(relx=horizontal_axis_for_selection_label, rely=verticle_axis_for_selection_label, anchor=CENTER)
 
-    ask_to_select_main_directory_label = Label(frame_1, text = 'Select your project directory:', font = ('Arial', 15), bg = color, fg = fontColor)
-    ask_to_select_main_directory_label.place(relx=0.32, rely=0.25, anchor=CENTER)
+    more_info_image = os.path.join(os.path.dirname(__file__), 'data', 'more_info_icon.png')
+    more_info_image = Image.open(more_info_image)
+    more_info_image = ImageTk.PhotoImage(more_info_image)
+    img = Label(frame_1, image=more_info_image)
+    more_info_image.image = more_info_image
+    more_info_button = Button(frame_1, image = more_info_image, command=lambda: info_popup(), borderwidth=0, height= 18, width= 22)
+    more_info_button.place(relx=(horizontal_axis_for_selection_label-0.1), rely=verticle_axis_for_selection_label, anchor=CENTER)
 
     entry_box_for_file_path= ttk.Entry(frame_1, width = 60, font=40)
     entry_box_for_file_path.place(relx=0.5, rely=0.3, anchor=CENTER)
@@ -157,6 +166,8 @@ def get_tif_files(folder_selected_as_project_directory, frame_1, entry_box_for_f
     else:
         choose_valid_folder_popup() # Must choose a project directory that has a subfolder called 'Images'
 
+def info_popup():
+    tkinter.messagebox.showinfo("What is the Project Folder?",  "This is where you choose your project folder. You make your own folder that includes an 'Images' folder, and a 'weights.pt' file. \n The 'Images' folder has the images of your cells. \n The 'weights.pt' file is for the neural network to know how to work with your specific cell type. \n \n After running this program, a new folder with your results will appear within this project folder.")
 
 def return_tif_files(tif_file_names_in_images_directory):
      return tif_file_names_in_images_directory
