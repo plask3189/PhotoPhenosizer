@@ -19,6 +19,7 @@ from pp_config import PPConfig
 import make_directories
 import selecting_project_directory_window
 
+# essentially applies the weights.pt file to all the images in a dir which converts them into binary image. Then applies some post-NN image modifications, measures the cells with scikit-image.
 
 config_object = ConfigParser()
 config_object.read("config.ini") # Read the config.ini file that is generated from pp_config.py
@@ -88,7 +89,6 @@ def process_image(image_filename, args):
     input_img = Image.open(image_filename).convert("RGB")
 
     the_code_directory = os.path.dirname(os.path.abspath('process_images.py')) # get the code directory
-    #os.chdir(the_code_directory)
 
     images_directory_name = os.path.dirname(os.path.abspath(image_filename))
     project_dir = os.path.dirname(os.path.abspath(images_directory_name))
@@ -96,8 +96,6 @@ def process_image(image_filename, args):
     print('project dir:' + project_dir)
     print('args weights: ' + args['weights_file'])
     nn_mask = nn_predict(input_img, args['weights_file'])
-
-    #os.chdir(project_dir) # need to go to the project dir to get config.ini
     threshold_mask = threshold(nn_mask, args["config"].threshold)
     threshold_mask = erod_dilate(threshold_mask, args["config"].kernel_size)
     area_filtered = area_filter(threshold_mask, args["config"].min_size)

@@ -11,6 +11,7 @@ class PPConfig:
         self.threshold = 200
         self.kernel_size = 3
         self.min_size = 700
+        self.weights_file = ""
 
         if os.path.isfile(self.filename): # if there is already a 'config.ini' file, we read the values from the parser and overwrite the defaults
 
@@ -29,7 +30,7 @@ class PPConfig:
 
             if 'NN' in sections:
                 if 'weights_file' in self.config_parser['NN']:
-                    self.weights_file = self.config_parser['NN']['weights_file'] # get the string in the 'weights_file' part of the 'NN' section in the config file.  Assign this string to the variable self.weights_file. 
+                    self.weights_file = self.config_parser['NN']['weights_file'] # get the string in the 'weights_file' part of the 'NN' section in the config file.  Assign this string to the variable self.weights_file.
 
         else: # if there is not already a config.ini file, make one.
             self.write_config()

@@ -18,10 +18,7 @@ from PIL import ImageTk, Image
 from configparser import ConfigParser
 import make_directories
 import tkinter.messagebox
-#import variable_support
-
 from pathlib import Path
-
 import selecting_project_directory_window
 import second_window
 

@@ -10,7 +10,6 @@ def make_results_directory(folder_selected_as_project_directory):
     date_and_time_string = current_time.strftime("Results %Y-%m-%d %H-%M-%S")
     global results_directory_name
     results_directory_name = date_and_time_string
-    #x = str(os.path.join(project_directory, results_directory_name))
     results_directory_name = os.path.join(folder_selected_as_project_directory, results_directory_name)
     os.makedirs(results_directory_name, exist_ok=True) # Make the directory called results_directory_name so that we can add the csv files to this directory
     return results_directory_name
@@ -32,7 +31,7 @@ def make_mask_directories(res_dir):
 # do all of the above functions
 def main_for_directories():
     make_results_directory()
-    make_mask_directories() # this function is called when a user would like the subdirectories with supplementary images in their results folder. 
+    make_mask_directories() # this function is called when a user would like the subdirectories with supplementary images in their results folder.
 
 
 if __name__ == "__main_for_directories__":

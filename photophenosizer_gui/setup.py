@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 
 setup(
-    name='mypackage',
+    name='photophenosizer',
     version='0.0.1',
     install_requires=['requests', 'importlib-metadata; python_version == "3.8"'],
 

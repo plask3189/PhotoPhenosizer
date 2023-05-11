@@ -30,12 +30,10 @@ def create_second_window(folder_selected_as_project_directory, window, tif_file_
     fontColor = '#FFFFFF'
     global list_of_configuration_entry_boxes
     list_of_configuration_entry_boxes = []
-
     frame_2 = Frame(window, bg = color, width=999, height=699)
     frame_2.place(relx=0.5, rely=0.5, anchor=CENTER)
     introTextLine1 = Label(frame_2, text = 'Welcome to Photo Phenosizer', font = ('Arial', 50), bg = color, fg = fontColor)
     introTextLine1.place(relx=0.5, rely=0.1, anchor=CENTER)
-
 
     #----------------------- Threshold ---------------------------
     threshold_label = Label(frame_2, text = 'Threshold value: ', font = ('Arial', 15), bg = color, fg = fontColor)
@@ -51,18 +49,15 @@ def create_second_window(folder_selected_as_project_directory, window, tif_file_
     list_of_configuration_entry_boxes.append(threshold_entry_box) # if valid, append to list.
 
     #----- More info button for threshold: -----
-    #the_code_directory = os.path.dirname(os.path.abspath('second_window.py')) # get the code directory, which is the same directory where this file is located! That way, we do not need to use 'getcwd(),' which we are trying to avoid.
     more_info_image = os.path.join(os.path.dirname(__file__), 'data', 'more_info_icon.png')
     more_info_image = Image.open(more_info_image)
 
-    #more_info_image = Image.open(the_code_directory + '/more_info_icon.png')
     more_info_image = ImageTk.PhotoImage(more_info_image)
     img = Label(frame_2, image=more_info_image)
     more_info_image.image = more_info_image
 
     more_info_button = Button(frame_2, image = more_info_image, command=lambda: info_popup('threshold'), borderwidth=0, height= 18, width= 22)
     more_info_button.place(relx=0.32, rely=0.2, anchor=CENTER)
-
 
     #----------------------- Kernel Size ---------------------------
     kernel_size_label = Label(frame_2, text = 'Kernel size: ', font = ('Arial', 15), bg = color, fg = fontColor)
@@ -74,7 +69,6 @@ def create_second_window(folder_selected_as_project_directory, window, tif_file_
     # Kernel Size Domain Checking:
     kern_reg = frame_2.register(kern_callback)
     kernel_size_entry_box.config(validate="focusout", validatecommand=(kern_reg, '%P'))
-    # ---------------------------------------
     list_of_configuration_entry_boxes.append(kernel_size_entry_box)
 
     #----------------------- Min Size ---------------------------
@@ -90,21 +84,20 @@ def create_second_window(folder_selected_as_project_directory, window, tif_file_
     # Kernel Size Domain Checking:
     min_reg = frame_2.register(min_callback)
     min_size_entry_box.config(validate="focusout", validatecommand=(min_reg, '%P'))
-    print
     list_of_configuration_entry_boxes.append(min_size_entry_box)
 
     # More info button for min size:
     more_info_button_for_min_size= Button(frame_2, image = more_info_image,command = lambda: info_popup('min_size'), borderwidth=0, height= 18, width= 22)
     more_info_button_for_min_size.place(relx=0.32, rely=0.4, anchor=CENTER)
 
+
     #-------------------------- Upload Weights File------------------
     ask_to_select_weights_file_label = Label(frame_2, text = 'Select the weights file:', font = ('Arial', 15), bg = color, fg = fontColor)
-    ask_to_select_weights_file_label.place(relx=0.1, rely=0.5, anchor=CENTER)
+    ask_to_select_weights_file_label.place(relx=0.12, rely=0.5, anchor=CENTER)
 
     entry_box_for_weights_path=ttk.Entry(frame_2, width = 60, font=40)
     path_of_weights_file = str(config.weights_file)
     entry_box_for_weights_path.insert(END, config.weights_file) # automatically chose the last used weights.pt file.
-    print('weights entry box: ' + str(path_of_weights_file))
     entry_box_for_weights_path.place(relx=0.5, rely=0.5, anchor=CENTER)
     list_of_configuration_entry_boxes.append(path_of_weights_file)
 
@@ -128,13 +121,10 @@ def create_second_window(folder_selected_as_project_directory, window, tif_file_
     #----------------------------- Button Frame---------------------
     white_color = '#FFFFFF'
     button_frame = Frame(frame_2, bg = white_color, width = 205, height = 51.25)
-    #button_frame_frame.pack()
     button_frame.place(relx=0.5, rely=0.7, anchor=CENTER)
 
     # ------------------------------- Run Button---------------------
-    print("list of config entry boxes: " + str(list_of_configuration_entry_boxes))
     length = len(list_of_configuration_entry_boxes)
-    print("sec win: leng of list: " + str(length))
     run_button = Button(button_frame, text ='Run', command = lambda: run_process_images(folder_selected_as_project_directory, tif_file_names_in_images_directory, window, res_dir, list_of_configuration_entry_boxes))
     run_button.place(relx=0.8, rely=0.5, anchor=CENTER)
 
@@ -155,14 +145,12 @@ def info_popup(threshold_or_kernel_size_or_min_size):
         popup_title = "More info on min size"
         tkinter.messagebox.showinfo(popup_title,  "The min size can be 1-1000. This is the minimum Feret diameter. ")
 
-def back(window): # destroy the kickoff window
-    window.quit()
-    #exec(open('kickoff_window.py').read())
-    kickoff_window.main()
+def back(window):
+    window.destroy()
+    selecting_project_directory_window.main()
 
 def open_weights_file(entry_box_for_weights_path):
      weights_filepath_selected = filedialog.askopenfilename() # ask for the weights file
-     print("weights fil selected: " + weights_filepath_selected)
      if not (weights_filepath_selected.endswith('.pt')): # to see if the weights file is acceptable, check if the extension is '.pt'
          tkinter.messagebox.showwarning('Weights File Error',  "Please select a weights file. The file must have extension '.pt'")
      if not os.path.exists(weights_filepath_selected):
@@ -177,22 +165,30 @@ def make_mask_directories_here(res_dir, checked_or_unchecked):
     if(checked_or_unchecked.get() == 1): # if the user checks the box saying that they want to save the configuration images, make the directories to save those images
         make_directories.make_mask_directories(res_dir)
 
-
 def thresh_callback(input):
+    if input.isdigit() == False: # Check if the entry box value is a digit
+        tkinter.messagebox.showwarning('Domain Error',  "Please use a threshold value 0-255")
+        return False
     input = int(input)
-    if input > 255 or input < 0 or input == "":
+    if input > 255 or input < 0:
         tkinter.messagebox.showwarning('Domain Error',  "Please use a threshold value 0-255")
         return False # callback function returns false if input is invalid. When return false, the user's attempt to edit the entry box's text is refused so the text is unchanged.
 
 def kern_callback(input):
-    kern = int(input)
-    if kern > 500 or kern < 2 or kern == "":
+    if input.isdigit() == False: # Check if the entry box value is a digit
+        tkinter.messagebox.showwarning('Domain Error',  "Please use a kernel size 2-500")
+        return False
+    kern = int(input) # convert the input to an integer in order to perform comparison operations.
+    if kern > 500 or kern < 2:
         tkinter.messagebox.showwarning('Domain Error',  "Please use a kernel size 2-500")
         return False
 
 def min_callback(input):
+    if input.isdigit() == False: # Check if the entry box value is a digit
+        tkinter.messagebox.showwarning('Domain Error',  "Please use a min size 1-1000")
+        return False
     min = int(input)
-    if min < 1 or min > 1000 or min == "":
+    if min < 1 or min > 1000:
         tkinter.messagebox.showwarning('Domain Error',  "Please use a min size 1-1000")
         return False
 
