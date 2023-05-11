@@ -22,6 +22,25 @@ from pathlib import Path
 import second_window
 
 
+def get_config_directory():
+    home_directory = os.path.expanduser('~')
+    config_directory = os.path.join(home_directory, ".config", "pp")
+
+    if not os.path.isdir(config_directory):
+        os.makedirs(config_directory)
+
+    return config_directory
+
+
+def get_projdir_path():
+    projdir_path = os.path.join(get_config_directory(), "user_project_directory.txt")
+
+    if not os.path.isfile(projdir_path):
+        open(projdir_path, 'a').close()
+
+    return projdir_path
+
+
 def selecting_project_directory_window():
     global window
     window = tk.Tk()
@@ -74,8 +93,7 @@ def selecting_project_directory_window():
     entry_box_for_file_path= ttk.Entry(frame_1, width = 60, font=40)
     entry_box_for_file_path.place(relx=0.5, rely=(verticle_axis_for_selection_label+0.05), anchor=CENTER)
 
-    home_directory = os.path.expanduser( '~' )
-    projdir_path = os.path.join(home_directory, "pp", "user_project_directory.txt")
+    projdir_path = get_projdir_path()
 
     with open(projdir_path) as f:
         folder_selected_as_project_directory = f.readlines() # get whatever is in the text file.
@@ -106,8 +124,7 @@ def selecting_project_directory_window():
 def open_file(entry_box_for_file_path):
     # If the user presses the button to upload a new path for the project directory
     entry_box_for_file_path.delete(0, END) # Delete the text that was in the entry box for project directory submission.
-    home_directory = os.path.expanduser( '~' )
-    projdir_path = os.path.join(home_directory, "pp", "user_project_directory.txt")
+    projdir_path = get_projdir_path()
     with open(projdir_path,'w') as file: # Delete the contents of the user_project_directory.txt file
         pass
     folder_selected_as_project_directory = filedialog.askdirectory() # Ask the user to select a project directory. The selected one is assigned to folder_selected_as_project_directory
