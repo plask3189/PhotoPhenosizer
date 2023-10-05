@@ -84,10 +84,10 @@ This will bring the help menu up for more information on what arguments can be p
 ## Authors
 
 Contributors names and contact info
-* Kate Plas(plask@xavier.edu)
 * Martin Vo(mvo58805@med.lecom.edu)
 * Nathan Sommer(sommern1@xavier.edu)
 * Ryan Miller(millerry@grinnell.edu)
+* Kate Plas(kateplas45208@gmail.com)
 
 ## License
 
